@@ -1,9 +1,9 @@
-package com.connect.system.domain.model.EntityPerson;
+package com.connect.system.domain.model.Account.EntityPerson;
 
 public enum ProfileRole {
     RH("RH"),
-    USER("user"),
-    MANAGER("manager");
+    USER("USER"),
+    MANAGER("MANAGER");
 
     private String role;
 

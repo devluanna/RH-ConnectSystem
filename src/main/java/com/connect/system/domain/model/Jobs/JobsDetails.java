@@ -10,7 +10,7 @@ import lombok.Data;
 import java.util.Date;
 
 @Data
-@Entity(name = "tb_job_details")
+@Entity
 @JsonPropertyOrder({ "id_job_details", "id_account", "name_squad", "type_of_record", "seniority", "office", "occupancy_area", "time_experience", "hard_skills", "soft_skills", "language_primary", "report_me", "admission_date"})
 public class JobsDetails {
 
@@ -22,7 +22,6 @@ public class JobsDetails {
     private String identity;
 
     private String description;
-
     private String name_squad;//VERIFICAR SE ELE ESTA DENTRO DE UMA SQUAD "ALLOCATED", SE FOR VERDADE RETORNAR O NOME DA SQUAD, SE NAO "ELE NAO ESTA EM UMA SQUAD"
     private String type_of_record; //TECNOLOGIA, ADMINISTRACAO, ARQUITETURA, RH...
     private String seniority; //ENUM NIVEL JUNIOR, TRAINEE
@@ -37,8 +36,7 @@ public class JobsDetails {
     private String admission_date; //DATA DE ADMISSAO
 
     public JobsDetails() {
-        this.id_job_details = getId_job_details();
-        this.description = "Busco constantemente o crescimento profissional e pessoal, colocando em prática minhas habilidades colaborativas";
+        this.description = "Busco crescimento profissional";
         this.name_squad = "Rogue One";
         this.type_of_record = "Tech";
         this.seniority = "Intern";

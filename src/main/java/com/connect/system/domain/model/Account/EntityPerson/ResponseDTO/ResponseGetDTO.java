@@ -19,7 +19,6 @@ public class ResponseGetDTO {
     private String password;
     private Status status;
     private Long personalDataId;
-    private Long locationId;
     private Long jobsDetailsId;
 
 }

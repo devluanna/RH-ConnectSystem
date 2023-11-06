@@ -10,10 +10,10 @@ import java.util.List;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
-    @Query("SELECT NEW com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO(p.id, p.identityPerson,p.name, p.last_name, p.email, p.profileRole, p.password, p.status, p.personalData.id, p.personalData.location.id, p.jobsDetails.id) FROM Person p")
+    @Query("SELECT NEW com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO(p.id, p.identityPerson,p.name, p.last_name, p.email, p.profileRole, p.password, p.status, p.personalData.id, p.jobsDetails.id) FROM Person p")
    List<ResponseGetDTO> findAllUsersWithPersonalDataIds();
 
-    @Query("SELECT NEW com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO(p.id, p.identityPerson,p.name, p.last_name, p.email, p.profileRole, p.password, p.status, p.personalData.id, p.personalData.location.id, p.jobsDetails.id) FROM Person p")
+    @Query("SELECT NEW com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO(p.id, p.identityPerson,p.name, p.last_name, p.email, p.profileRole, p.password, p.status, p.personalData.id, p.jobsDetails.id) FROM Person p")
     ResponseGetDTO findUserById();
 
 }

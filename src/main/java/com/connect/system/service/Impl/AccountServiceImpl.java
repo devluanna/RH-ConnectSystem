@@ -1,13 +1,9 @@
 package com.connect.system.service.Impl;
 
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.UpdateProfileDTO;
-import com.connect.system.domain.model.Account.User.Candidate;
 import com.connect.system.domain.model.Account.EntityPerson.Person;
-import com.connect.system.domain.model.Account.EntityPerson.ProfileRole;
-import com.connect.system.domain.model.Informations.Location;
-import com.connect.system.domain.model.Informations.PersonalData;
-import com.connect.system.domain.model.Account.Manager.Manager;
-import com.connect.system.domain.model.Account.Rh.Rh;
+import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponsePersonDTO;
+import com.connect.system.domain.model.AccountInformation.Location;
+import com.connect.system.domain.model.AccountInformation.PersonalData;
 import com.connect.system.domain.model.Jobs.JobsDetails;
 import com.connect.system.domain.repository.JobDetailsRepository;
 import com.connect.system.domain.repository.PersonRepository;
@@ -15,12 +11,11 @@ import com.connect.system.domain.repository.PersonalDataRepository;
 import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO;
 import com.connect.system.service.AccountService;
 import jakarta.transaction.Transactional;
-import lombok.SneakyThrows;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.stereotype.Service;
 
-import java.lang.reflect.Constructor;
 import java.util.*;
 
 @Service
@@ -30,18 +25,9 @@ public class AccountServiceImpl implements AccountService {
     PersonRepository personRepository;
     @Autowired
     PersonalDataRepository personalDataRepository;
-
     @Autowired
     JobDetailsRepository jobDetailsRepository;
 
-    private String identity;
-
-    private Map<ProfileRole, Class<? extends Person>> roleToClassMap = new HashMap<>();
-    public AccountServiceImpl() {
-        roleToClassMap.put(ProfileRole.USER, Candidate.class);
-        roleToClassMap.put(ProfileRole.MANAGER, Manager.class);
-        roleToClassMap.put(ProfileRole.RH, Rh.class);
-    }
 
    @Override
    @Transactional
@@ -51,14 +37,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-
     public ResponseGetDTO getUserById() {
        return personRepository.findUserById();
-    }
-
-    @Override
-    public Person update(Person p) {
-      return personRepository.save(p);
     }
 
     @Override
@@ -69,34 +49,23 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public Person createPerson(Person newUser)  {
+    public ResponsePersonDTO createPerson(Person newUser, ResponsePersonDTO data)  {
 
-        if (newUser.getIdentityPerson() == null) {
-            newUser.setIdentityPerson(generateId());
-        }
+        PersonalData personalData = new PersonalData();
+        JobsDetails aboutJob = new JobsDetails();
 
-        if(newUser.getPassword() == null) {
-            newUser.setPassword(generateRandomPassword());
-        }
+        Person response = new Person(data.getName(), data.getLast_name(), data.getEmail(), data.getIdentityPerson(), data.getPassword(), data.getProfileRole(), personalData, aboutJob);
+        response.setIdentityPerson(generateId());
+        response.setPassword(generateRandomPassword());
 
-        Class<? extends Person> userClass = roleToClassMap.get(newUser.getProfileRole());
+        Person createdUser = personRepository.save(response);
 
-        if (userClass != null) {
-            System.out.println("CRIOU UM " + newUser.getProfileRole());
-            return createUserInstance(userClass, newUser.getName(), newUser.getLast_name(), newUser.getEmail(), newUser.getProfileRole(), newUser.getPersonalData(), newUser.getIdentityPerson(), newUser.getPassword(), newUser.getJobsDetails());
-        } else {
-            return null;
-        }
+        createInformations(personalData, aboutJob, createdUser.getId(), createdUser.getIdentityPerson());
 
+        BeanUtils.copyProperties(createdUser, data);
+
+       return (data);
     }
-
-    @SneakyThrows
-    @Transactional
-    private Person createUserInstance(Class<? extends Person> userClass, String name, String last_name, String email, ProfileRole profileRole, PersonalData personalData, String identityPerson, String password, JobsDetails jobsDetails) {
-        Constructor<? extends Person> constructor = userClass.getConstructor(String.class, String.class, String.class, ProfileRole.class, PersonalData.class, String.class, String.class, JobsDetails.class);
-        return constructor.newInstance(name, last_name, email, profileRole, personalData, identityPerson, password, jobsDetails);
-    }
-
 
     @Override
     public void createInformations(PersonalData personalData, JobsDetails jobsDetails, Long id, String identityPerson) {
@@ -115,7 +84,6 @@ public class AccountServiceImpl implements AccountService {
                 location.setId_account(idAccount);
                 location.setIdentity(identity_account);
             }
-
             personalDataRepository.save(personalData);
         }
 
@@ -127,6 +95,25 @@ public class AccountServiceImpl implements AccountService {
         jobDetailsRepository.save(jobsDetails);
 
     }
+
+    @Override
+    public ResponsePersonDTO update(Person p, Long id, ResponsePersonDTO updatePersonDTO)  {
+        Person account = findById(id);
+
+        if(updatePersonDTO.getName() != null) {account.setName(updatePersonDTO.getName());}
+        if(updatePersonDTO.getLast_name() != null) {account.setLast_name(updatePersonDTO.getLast_name());}
+        if(updatePersonDTO.getEmail() != null) { account.setEmail(updatePersonDTO.getEmail());}
+        if(updatePersonDTO.getEmail() != null) {account.setEmail(updatePersonDTO.getEmail());}
+        if(updatePersonDTO.getStatus() != null) {account.setStatus(updatePersonDTO.getStatus());}
+        if(updatePersonDTO.getStatus() != null) {account.setProfileRole(updatePersonDTO.getProfileRole());}
+
+        Person updatedAccount = personRepository.save(account);
+
+        BeanUtils.copyProperties(updatedAccount, updatePersonDTO);
+
+        return (updatePersonDTO);
+    }
+
 
     @Transactional
     private String generateId() {

@@ -1,4 +1,4 @@
-package com.connect.system.domain.model.Informations;
+package com.connect.system.domain.model.AccountInformation;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.Entity;

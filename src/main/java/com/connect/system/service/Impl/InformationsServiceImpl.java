@@ -1,11 +1,12 @@
 package com.connect.system.service.Impl;
 
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.LocationDTO;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.PersonalDataDTO;
-import com.connect.system.domain.model.AccountInformation.Location;
-import com.connect.system.domain.model.AccountInformation.PersonalData;
-import com.connect.system.domain.repository.LocationRepository;
-import com.connect.system.domain.repository.PersonalDataRepository;
+import com.connect.system.domain.model.Account.EntityPerson.Person;
+import com.connect.system.domain.model.Account.ResponseDTO.LocationDTO;
+import com.connect.system.domain.model.Account.ResponseDTO.PersonalDataDTO;
+import com.connect.system.domain.model.Account.AccountInformation.Location;
+import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
+import com.connect.system.domain.repository.User.LocationRepository;
+import com.connect.system.domain.repository.User.PersonalDataRepository;
 import com.connect.system.service.InformationsService;
 
 
@@ -14,6 +15,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.NoSuchElementException;
@@ -34,61 +36,57 @@ public class InformationsServiceImpl implements InformationsService {
         this.modelMapper = modelMapper;
     }
 
-    @Override
-    public PersonalData findByIdPersonalData(Long id_personalData) {
-        return personalDataRepository.findById(id_personalData).orElseThrow(NoSuchElementException::new);
-    }
-    @Override
     public Location findLocationById(Long id_location) {
         return locationRepository.findById(id_location).orElseThrow(NoSuchElementException::new);
     }
 
     @Override
+    public PersonalData findByIdPersonalData(Long id_personalData) {
+        return personalDataRepository.findById(id_personalData).orElseThrow(NoSuchElementException::new);
+    }
+
+
+    @Override
     @Transactional
-    public PersonalDataDTO getById() {
-        return personalDataRepository.findInformationsById();
+    public PersonalDataDTO getById(Long id_personalData) {
+        return personalDataRepository.findInformationsById(id_personalData);
     }
 
     @Override
-    public LocationDTO updateLocation(Location location, Long id_location, LocationDTO locationDTO) {
+    public Location updateLocation(Location location, Long id_location) {
 
-        Location locationUser = findLocationById(location.getId_location());
+        Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        modelMapper.map(locationDTO, locationUser);
+       if (!authenticatedUser.getPersonalData().getLocation().getId_location().equals(id_location)) {
+           throw new IllegalArgumentException("Access denied!");
+        }
 
-        modelMapper.map(locationUser, location);
+        location.setId_location(id_location);
 
-        Location updatedLocation = locationRepository.save(location);
+        return locationRepository.save(location);
 
-        LocationDTO updatedLocationDTO = modelMapper.map(updatedLocation, LocationDTO.class);
-
-        return updatedLocationDTO;
     }
+
 
 
     @Override
     public PersonalDataDTO updatePersonalData(PersonalData personalData, Long id_personalData, PersonalDataDTO personalDataDTO) {
+
+        Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!authenticatedUser.getPersonalData().getId_personalData().equals(id_personalData)) {
+           throw new IllegalArgumentException("Access denied!");
+        }
+
         PersonalData userPersonalData = findByIdPersonalData(id_personalData);
 
-      if (personalDataDTO.getDate_of_birth() != null) {
-          userPersonalData.setDate_of_birth(personalDataDTO.getDate_of_birth());}
+        modelMapper.map(personalDataDTO, userPersonalData);
+        modelMapper.map(userPersonalData, personalData);
 
-      if (personalDataDTO.getTelephone() != null) {
-          userPersonalData.setTelephone(personalDataDTO.getTelephone());}
+        PersonalData updatedData = personalDataRepository.save(personalData);
 
-      if(personalDataDTO.getCpf_person() != null) {
-          userPersonalData.setCpf_person(personalDataDTO.getCpf_person());}
+        return modelMapper.map(updatedData, PersonalDataDTO.class);
 
-
-      if(personalDataDTO.getRg_person() != null) {
-          userPersonalData.setRg_person(personalDataDTO.getRg_person());}
-
-
-       PersonalData updateData = personalDataRepository.save(userPersonalData);
-
-       BeanUtils.copyProperties(updateData, personalDataDTO);
-
-       return personalDataDTO;
 
     }
 

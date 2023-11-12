@@ -1,4 +1,4 @@
-package com.connect.system.domain.model.AccountInformation;
+package com.connect.system.domain.model.Account.AccountInformation;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
@@ -8,6 +8,7 @@ import lombok.Data;
 @Entity
 @JsonPropertyOrder({ "id_personalData", "id_account", "identity", "date_of_birth", "telephone", "cpf_person", "rg_person", "profile_image", "location"})
 public class PersonalData {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_personalData;

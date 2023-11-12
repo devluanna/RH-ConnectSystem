@@ -1,8 +1,7 @@
 package com.connect.system.service;
 
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.JobsDetailsDTO;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.JobsDetailsGetDTO;
-import com.connect.system.domain.model.Jobs.JobsDetails;
+import com.connect.system.domain.model.Account.ResponseDTO.JobsDetailsDTO;
+import com.connect.system.domain.model.Account.Jobs.JobsDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,5 +11,6 @@ public interface JobsService  {
 
     JobsDetailsDTO updateJobsDetails(JobsDetails jobsDetails, Long id_jobs_details, JobsDetailsDTO jobsDetailsDTO);
 
-    JobsDetailsGetDTO getJobById();
+    JobsDetailsDTO getJobById(Long id_jobs_details);
+
 }

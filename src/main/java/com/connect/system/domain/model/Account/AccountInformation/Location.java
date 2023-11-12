@@ -1,4 +1,4 @@
-package com.connect.system.domain.model.AccountInformation;
+package com.connect.system.domain.model.Account.AccountInformation;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.Entity;
@@ -9,15 +9,12 @@ import lombok.Data;
 
 @Data
 @Entity(name = "tb_location")
-@JsonPropertyOrder({ "id_location", "id_account", "identity", "country", "state", "city", "address", "zip_code", "complement", "house_number" })
+@JsonPropertyOrder({ "id_location", "country", "state", "city", "address", "zip_code", "complement", "house_number" })
 public class Location {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id_location;
-
-    private Long id_account;
-    private String identity;
 
     private String country;
     private String state;
@@ -35,7 +32,6 @@ public class Location {
         this.zip_code = 10000000;
         this.complement = "For example: BLOCK 12 and Apartment 12";
         this.house_number = 1;
-
     }
 
 }

@@ -1,9 +1,9 @@
 package com.connect.system.service;
 
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.LocationDTO;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.PersonalDataDTO;
-import com.connect.system.domain.model.AccountInformation.Location;
-import com.connect.system.domain.model.AccountInformation.PersonalData;
+import com.connect.system.domain.model.Account.ResponseDTO.LocationDTO;
+import com.connect.system.domain.model.Account.ResponseDTO.PersonalDataDTO;
+import com.connect.system.domain.model.Account.AccountInformation.Location;
+import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -13,9 +13,8 @@ public interface InformationsService {
 
     PersonalDataDTO updatePersonalData(PersonalData personalData, Long id_personalData, PersonalDataDTO personalDataDTO);
 
-    PersonalDataDTO getById();
+    PersonalDataDTO getById(Long id_personalData);
 
-    LocationDTO updateLocation(Location location, Long id_location, LocationDTO locationDTO);
+    Location updateLocation(Location location, Long id_location);
 
-    Location findLocationById(Long id_location);
 }

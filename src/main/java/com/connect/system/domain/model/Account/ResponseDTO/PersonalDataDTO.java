@@ -1,6 +1,6 @@
-package com.connect.system.domain.model.Account.EntityPerson.ResponseDTO;
+package com.connect.system.domain.model.Account.ResponseDTO;
 
-import com.connect.system.domain.model.AccountInformation.Location;
+import com.connect.system.domain.model.Account.AccountInformation.Location;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

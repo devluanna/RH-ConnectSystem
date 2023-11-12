@@ -1,9 +1,9 @@
 package com.connect.system.rest.controller;
 
 
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.JobsDetailsDTO;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.JobsDetailsGetDTO;
-import com.connect.system.domain.model.Jobs.JobsDetails;
+import com.connect.system.domain.model.Account.ResponseDTO.JobsDetailsDTO;
+import com.connect.system.domain.model.Account.Jobs.JobsDetails;
+import com.connect.system.service.AccountService;
 import com.connect.system.service.JobsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +18,10 @@ public class JobsDetailsController {
     @Autowired
     JobsService jobsService;
 
+    @Autowired
+    AccountService accountService;
+
+
     @PutMapping("/{id_jobs_details}")
     public ResponseEntity updateJobs(@PathVariable Long id_jobs_details, @RequestBody JobsDetailsDTO jobsDetailsDTO) {
 
@@ -29,14 +33,14 @@ public class JobsDetailsController {
     }
 
     @GetMapping("/get/{id_jobs_details}")
-    public ResponseEntity<JobsDetailsGetDTO> getJobById(@PathVariable Long id_jobs_details) {
-        JobsDetailsGetDTO jobsDetailsDTO = jobsService.getJobById();
+    public ResponseEntity<JobsDetailsDTO> getJobById(@PathVariable Long id_jobs_details) {
+        JobsDetailsDTO jobsDetailsGetDTO = jobsService.getJobById(id_jobs_details);
 
-        if(jobsDetailsDTO == null) {
+        if(jobsDetailsGetDTO == null) {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(jobsDetailsDTO);
+        return ResponseEntity.ok(jobsDetailsGetDTO);
 
     }
 

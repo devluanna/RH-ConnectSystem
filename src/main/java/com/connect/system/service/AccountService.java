@@ -1,10 +1,12 @@
 package com.connect.system.service;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponsePersonDTO;
-import com.connect.system.domain.model.AccountInformation.PersonalData;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO;
-import com.connect.system.domain.model.Jobs.JobsDetails;
+import com.connect.system.domain.model.Account.ResponseDTO.UpdatePersonDTO;
+import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
+
+import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
+import com.connect.system.domain.model.Account.Jobs.JobsDetails;
+import com.connect.system.domain.model.Account.DashboardStudies.DashboardStudies;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import org.springframework.stereotype.Service;
 
@@ -13,16 +15,10 @@ import java.util.List;
 @Service
 public interface AccountService {
 
-    ResponsePersonDTO createPerson(Person newUser,ResponsePersonDTO data) throws InvalidFormatException;
-
-    void createInformations(PersonalData personalData, JobsDetails jobsDetails, Long id, String identityPerson);
-
-    ResponsePersonDTO update( Person p, Long id, ResponsePersonDTO updatePersonDTO);
-
-    List<ResponseGetDTO> getAllUsers();
-
+    PersonDTO createPerson(Person newUser, PersonDTO data, PersonalData personalDataUser, JobsDetails userJobInformation, DashboardStudies dashboardStudies) throws InvalidFormatException;
+    UpdatePersonDTO update(Person p, Long id, UpdatePersonDTO updatePersonDTO);
+    List<PersonDTO> getAllUsers();
     Person findById(Long id);
-
-    ResponseGetDTO getUserById();
+    PersonDTO getUserById(Long id);
 
 }

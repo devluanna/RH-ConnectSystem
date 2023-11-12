@@ -1,19 +1,23 @@
 package com.connect.system.service.Impl;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponsePersonDTO;
-import com.connect.system.domain.model.AccountInformation.Location;
-import com.connect.system.domain.model.AccountInformation.PersonalData;
-import com.connect.system.domain.model.Jobs.JobsDetails;
-import com.connect.system.domain.repository.JobDetailsRepository;
-import com.connect.system.domain.repository.PersonRepository;
-import com.connect.system.domain.repository.PersonalDataRepository;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO;
+import com.connect.system.domain.model.Account.ResponseDTO.UpdatePersonDTO;
+import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
+import com.connect.system.domain.model.Account.Jobs.JobsDetails;
+import com.connect.system.domain.model.Account.DashboardStudies.DashboardStudies;
+import com.connect.system.domain.repository.User.DashboardStudiesRepository;
+import com.connect.system.domain.repository.User.JobDetailsRepository;
+import com.connect.system.domain.repository.User.PersonRepository;
+import com.connect.system.domain.repository.User.PersonalDataRepository;
+import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
 import com.connect.system.service.AccountService;
+import com.connect.system.utils.MailConfig;
 import jakarta.transaction.Transactional;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -27,19 +31,33 @@ public class AccountServiceImpl implements AccountService {
     PersonalDataRepository personalDataRepository;
     @Autowired
     JobDetailsRepository jobDetailsRepository;
+    @Autowired
+    DashboardStudiesRepository dashboardStudiesRepository;
 
+    @Autowired
+    MailConfig emailService;
+
+    @Autowired
+    private final ModelMapper modelMapper;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    public AccountServiceImpl(ModelMapper modelMapper) {
+        this.modelMapper = modelMapper;
+    }
 
    @Override
    @Transactional
-    public List<ResponseGetDTO> getAllUsers() {
+   public List<PersonDTO> getAllUsers() {
      return personRepository.findAllUsersWithPersonalDataIds();
   }
 
-    @Override
-    @Transactional
-    public ResponseGetDTO getUserById() {
-       return personRepository.findUserById();
-    }
+   @Override
+   @Transactional
+   public PersonDTO getUserById(Long id) {
+       return personRepository.findUserById(id);
+   }
 
     @Override
     public Person findById(Long id) {
@@ -49,69 +67,80 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public ResponsePersonDTO createPerson(Person newUser, ResponsePersonDTO data)  {
+    public PersonDTO createPerson(Person newUser, PersonDTO data, PersonalData personalDataUser, JobsDetails userJobInformation, DashboardStudies dashboardStudies)  {
 
-        PersonalData personalData = new PersonalData();
-        JobsDetails aboutJob = new JobsDetails();
+        validateExistsEmail(data);
 
-        Person response = new Person(data.getName(), data.getLast_name(), data.getEmail(), data.getIdentityPerson(), data.getPassword(), data.getProfileRole(), personalData, aboutJob);
-        response.setIdentityPerson(generateId());
-        response.setPassword(generateRandomPassword());
+        Person userCreated = new Person
+                (data.getName(), data.getLast_name(), data.getEmail(), data.getIdentityPerson(),
+                        data.getPassword(), data.getRole(), data.getType_of_record(), data.getOffice(), data.getOccupancy_area(),
+                        data.getSeniority(), personalDataUser, userJobInformation, dashboardStudies);
 
-        Person createdUser = personRepository.save(response);
+        String passwordUser = generateRandomPassword();
+        String encryptedPassword = passwordEncoder.encode(passwordUser);
+        userCreated.setPassword(encryptedPassword);
 
-        createInformations(personalData, aboutJob, createdUser.getId(), createdUser.getIdentityPerson());
+        userCreated.setIdentityPerson(generateId());
 
-        BeanUtils.copyProperties(createdUser, data);
+        Person savedUser = personRepository.save(userCreated);
 
-       return (data);
+        validationOfPersonalDataFields(personalDataUser, savedUser.getId());
+        validationOfJobsDetailsFields(userJobInformation, savedUser.getId());
+        validationOfDasbboardStudiesFields(dashboardStudies, savedUser.getId());
+
+        savingInformationId(data,personalDataUser, userJobInformation, dashboardStudies);
+
+        BeanUtils.copyProperties(savedUser, data);
+        //sendWelcomeEmail(data, savedUser, passwordUser);
+
+        return (data);
     }
 
     @Override
-    public void createInformations(PersonalData personalData, JobsDetails jobsDetails, Long id, String identityPerson) {
+    public UpdatePersonDTO update(Person p, Long id, UpdatePersonDTO updatePersonDTO)  {
+        Person accountUser = findById(id);
 
-        Optional<Person> principal = personRepository.findById(id);
+        modelMapper.map(updatePersonDTO, accountUser);
+        modelMapper.map(accountUser, p);
 
-        Long idAccount = principal.get().getId();
-        String identity_account = principal.get().getIdentityPerson();
+        Person updatedUser = personRepository.save(p);
 
-        if (personalData != null) {
-            personalData.setId_account(idAccount);
-            personalData.setIdentity(identity_account);
-            Location location = personalData.getLocation();
+        return modelMapper.map(updatedUser, UpdatePersonDTO.class);
+    }
 
-            if (location != null) {
-                location.setId_account(idAccount);
-                location.setIdentity(identity_account);
-            }
-            personalDataRepository.save(personalData);
+    private void validateExistsEmail(PersonDTO data) {
+        Person existingEmail = personRepository.findByEmail(data.getEmail());
+
+        if (existingEmail != null) {
+            throw new IllegalArgumentException("Email already exists");
+        }
+    }
+
+    private void savingInformationId(PersonDTO data, PersonalData personalDataUser, JobsDetails userJobInformation, DashboardStudies dashboardStudies) {
+
+        if(data.getPersonalDataId() == null) {
+            data.setPersonalDataId(personalDataUser.getId_personalData());
         }
 
-        if(jobsDetails != null) {
-            jobsDetails.setId_account(idAccount);
-            jobsDetails.setIdentity(identity_account);
+        if(data.getJobsDetailsId() == null) {
+            data.setJobsDetailsId(userJobInformation.getId_job_details());
         }
 
-        jobDetailsRepository.save(jobsDetails);
+        if(data.getDashboardStudiesId() == null) {
+            data.setDashboardStudiesId(dashboardStudies.getId_dashboard());
+        }
 
     }
 
-    @Override
-    public ResponsePersonDTO update(Person p, Long id, ResponsePersonDTO updatePersonDTO)  {
-        Person account = findById(id);
+    private void sendWelcomeEmail(PersonDTO data, Person savedUser, String passwordUser) {
+        String subject = "WELCOME! Your credentials are ready!";
+        String emailBody = "Hello! " + data.getName() + " " + data.getLast_name() + ",\n\nWelcome to the System!\n\n" +
+                "\n\nRemember to reset your password and make your profile as updated and complete as possible.\n\n" +
+                "Here is your registration information:\n\n" +
+                "Login identity: " + savedUser.getIdentityPerson() + "\n" +
+                "Password: " + passwordUser;
 
-        if(updatePersonDTO.getName() != null) {account.setName(updatePersonDTO.getName());}
-        if(updatePersonDTO.getLast_name() != null) {account.setLast_name(updatePersonDTO.getLast_name());}
-        if(updatePersonDTO.getEmail() != null) { account.setEmail(updatePersonDTO.getEmail());}
-        if(updatePersonDTO.getEmail() != null) {account.setEmail(updatePersonDTO.getEmail());}
-        if(updatePersonDTO.getStatus() != null) {account.setStatus(updatePersonDTO.getStatus());}
-        if(updatePersonDTO.getStatus() != null) {account.setProfileRole(updatePersonDTO.getProfileRole());}
-
-        Person updatedAccount = personRepository.save(account);
-
-        BeanUtils.copyProperties(updatedAccount, updatePersonDTO);
-
-        return (updatePersonDTO);
+        emailService.sendEmail(data.getEmail(), subject, emailBody);
     }
 
 
@@ -130,8 +159,9 @@ public class AccountServiceImpl implements AccountService {
         return identity.toString();
     }
 
+
     @Transactional
-    protected String generateRandomPassword() {
+    private String generateRandomPassword() {
 
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$#";
         StringBuilder password = new StringBuilder();
@@ -142,10 +172,60 @@ public class AccountServiceImpl implements AccountService {
             password.append(characters.charAt(index));
         }
 
+        String passwordUser = password.toString();
+
+        System.out.println("SENHA DO USUARIO ->> " + passwordUser);
         return password.toString();
     }
 
+    private void validationOfJobsDetailsFields(JobsDetails userJobInformation, Long id) {
+        Optional<Person> accountUser = personRepository.findById(id);
 
+        Long idAccount = accountUser.get().getId();
+        String identity_account = accountUser.get().getIdentityPerson();
+        String typeOfRecord = String.valueOf(accountUser.get().getType_of_record());
+        String office = String.valueOf(accountUser.get().getOffice());
+        String occupancyArea = String.valueOf(accountUser.get().getOccupancy_area());
+        String seniorityAccount = String.valueOf(accountUser.get().getSeniority());
+
+        if(userJobInformation != null) {
+            userJobInformation.setId_account(idAccount);
+            userJobInformation.setIdentity(identity_account);
+            userJobInformation.setSeniority(seniorityAccount);
+            userJobInformation.setType_of_record(typeOfRecord);
+            userJobInformation.setOccupancy_area(occupancyArea);
+            userJobInformation.setOffice(office);}
+
+    }
+
+    private void validationOfDasbboardStudiesFields(DashboardStudies dashboardStudies, Long id) {
+        Optional<Person> account = personRepository.findById(id);
+
+        Long idAccount = account.get().getId();
+        String identity_account = account.get().getIdentityPerson();
+
+        if (dashboardStudies != null) {
+            dashboardStudies.setId_account(idAccount);
+            dashboardStudies.setIdentity(identity_account);
+
+            dashboardStudiesRepository.save(dashboardStudies);
+        }
+
+    }
+
+    private void validationOfPersonalDataFields(PersonalData personalDataUser, Long id) {
+        Optional<Person> account = personRepository.findById(id);
+
+        Long idAccount = account.get().getId();
+        String identity_account = account.get().getIdentityPerson();
+
+        if (personalDataUser != null) {
+            personalDataUser.setId_account(idAccount);
+            personalDataUser.setIdentity(identity_account);
+
+            personalDataRepository.save(personalDataUser);
+        }
+    }
 
 }
 

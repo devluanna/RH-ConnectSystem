@@ -1,4 +1,4 @@
-package com.connect.system.domain.model.Account.EntityPerson.ResponseDTO;
+package com.connect.system.domain.model.Account.ResponseDTO;
 
 import com.connect.system.domain.model.Account.EntityPerson.ProfileRole;
 import com.connect.system.domain.model.Account.EntityPerson.Status;
@@ -18,9 +18,9 @@ public class JobsDetailsDTO {
     private String description;
     private String name_squad;
     private String type_of_record;
-    private String seniority;
     private String office;
     private String occupancy_area;
+    private String seniority;
     private int time_experience;
     private String hard_skills;
     private String soft_skills;

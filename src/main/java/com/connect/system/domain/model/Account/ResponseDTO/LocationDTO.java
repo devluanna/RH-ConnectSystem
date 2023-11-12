@@ -1,4 +1,4 @@
-package com.connect.system.domain.model.Account.EntityPerson.ResponseDTO;
+package com.connect.system.domain.model.Account.ResponseDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class LocationDTO {
     private Long id_location;
-
-    private Long id_account;
-    private String identity;
 
     private String country;
     private String state;

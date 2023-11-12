@@ -1,10 +1,9 @@
 package com.connect.system.rest.controller;
 
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.LocationDTO;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.PersonalDataDTO;
-import com.connect.system.domain.model.Account.EntityPerson.ResponseDTO.ResponseGetDTO;
-import com.connect.system.domain.model.AccountInformation.Location;
-import com.connect.system.domain.model.AccountInformation.PersonalData;
+import com.connect.system.domain.model.Account.ResponseDTO.LocationDTO;
+import com.connect.system.domain.model.Account.ResponseDTO.PersonalDataDTO;
+import com.connect.system.domain.model.Account.AccountInformation.Location;
+import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
 import com.connect.system.service.InformationsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,7 @@ public class InformationsController {
     @GetMapping("/user/{id_personalData}")
     public ResponseEntity<PersonalDataDTO> getById(@PathVariable Long id_personalData) {
 
-        PersonalDataDTO personalData = informationsService.getById();
+        PersonalDataDTO personalData = informationsService.getById(id_personalData);
 
         if(personalData == null) {
             return ResponseEntity.notFound().build();
@@ -42,14 +41,13 @@ public class InformationsController {
     }
 
     @PutMapping("/location/{id_location}")
-    public ResponseEntity updateLocation(@PathVariable Long id_location, @RequestBody LocationDTO locationDTO) {
+    public ResponseEntity updateLocation(@PathVariable Long id_location, @RequestBody Location location) {
 
-        Location location = informationsService.findLocationById(id_location);
-
-        LocationDTO updatedLocation = informationsService.updateLocation(location, id_location, locationDTO);
+        Location updatedLocation = informationsService.updateLocation(location, id_location);
 
         return ResponseEntity.ok(updatedLocation);
     }
+
 
 
 }

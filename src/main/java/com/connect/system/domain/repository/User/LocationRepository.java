@@ -1,6 +1,6 @@
-package com.connect.system.domain.repository;
+package com.connect.system.domain.repository.User;
 
-import com.connect.system.domain.model.AccountInformation.Location;
+import com.connect.system.domain.model.Account.AccountInformation.Location;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

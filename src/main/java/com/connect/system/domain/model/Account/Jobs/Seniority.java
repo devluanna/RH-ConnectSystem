@@ -1,4 +1,4 @@
-package com.connect.system.domain.model.Jobs;
+package com.connect.system.domain.model.Account.Jobs;
 
 
 import java.util.List;

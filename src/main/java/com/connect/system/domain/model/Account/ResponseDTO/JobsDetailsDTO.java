@@ -15,8 +15,11 @@ public class JobsDetailsDTO {
     private Long id_account;
     private String identity;
 
-    private String description;
+    private Long id_squad;
+    private Long id_memberOfSquad;
     private String name_squad;
+
+    private String description;
     private String type_of_record;
     private String office;
     private String occupancy_area;
@@ -25,7 +28,6 @@ public class JobsDetailsDTO {
     private String hard_skills;
     private String soft_skills;
     private String language_primary;
-    private String report_me;
     private String admission_date;
 
 }

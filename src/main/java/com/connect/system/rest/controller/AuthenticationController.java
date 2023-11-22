@@ -42,11 +42,11 @@ public class AuthenticationController {
     }
 
     @PutMapping("/password/{id}")
-    public ResponseEntity<String> updatingPassword(@PathVariable Long id, @RequestBody @Valid PasswordDTO passwordDTO) {
+    public ResponseEntity<String> updatePassword(@PathVariable Long id, @RequestBody @Valid PasswordDTO passwordDTO) {
         Person user = accountService.findById(id);
 
         user.setPassword(passwordDTO.getPassword());
-        passwordService.updatePassword(user, passwordDTO, id);
+        passwordService.toUpdatePassword(user, passwordDTO, id);
 
         return ResponseEntity.ok("Password updated successfully!");
     }

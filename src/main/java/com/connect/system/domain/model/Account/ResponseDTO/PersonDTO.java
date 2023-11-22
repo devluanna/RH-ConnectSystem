@@ -2,10 +2,7 @@ package com.connect.system.domain.model.Account.ResponseDTO;
 
 import com.connect.system.domain.model.Account.EntityPerson.ProfileRole;
 import com.connect.system.domain.model.Account.EntityPerson.Status;
-import com.connect.system.domain.model.Account.Jobs.OccupancyArea;
-import com.connect.system.domain.model.Account.Jobs.Office;
-import com.connect.system.domain.model.Account.Jobs.Seniority;
-import com.connect.system.domain.model.Account.Jobs.TypeOfRecord;
+import com.connect.system.domain.model.Account.Jobs.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,6 +20,8 @@ public class PersonDTO {
     private Office office;
     private OccupancyArea occupancy_area;
     private Seniority seniority;
+    private SubPosition sub_position;
+    private String report_me;
     private ProfileRole role;
     private String password;
     private Status status;

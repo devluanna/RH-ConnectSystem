@@ -46,7 +46,7 @@ public class PasswordServiceImpl implements PasswordService {
         }
     }
 
-    public Person updatePassword(Person updatedNewPassword, PasswordDTO passwordDTO, Long id) {
+    public Person toUpdatePassword(Person updatedNewPassword, PasswordDTO passwordDTO, Long id) {
         Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         if (!authenticatedUser.getId().equals(id)) {

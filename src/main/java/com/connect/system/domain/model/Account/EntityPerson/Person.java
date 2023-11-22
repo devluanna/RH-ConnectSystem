@@ -19,7 +19,7 @@ import java.util.List;
 @Data
 @Entity
 @NoArgsConstructor
-@JsonPropertyOrder({ "id", "identityPerson", "name", "last_name", "email", "role", "type_of_record", "office", "occupancy_area", "seniority", "password", "status" })
+@JsonPropertyOrder({ "id", "identityPerson", "name", "last_name", "email", "role", "type_of_record", "office", "occupancy_area", "seniority", "sub_position", "report_me", "password", "status" })
 public class Person implements UserDetails {
 
     @Id
@@ -36,8 +36,10 @@ public class Person implements UserDetails {
 
     private TypeOfRecord type_of_record;
     private Office office;
+    private SubPosition sub_position;
     private OccupancyArea occupancy_area;
     private Seniority seniority;
+    private String report_me;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "personal_data_id")
@@ -51,7 +53,7 @@ public class Person implements UserDetails {
     @JoinColumn(name = "dashboardStudies_id")
     private DashboardStudies dashboardStudies;
 
-    public Person(String name, String last_name, String email, String identityPerson, String password, ProfileRole role, TypeOfRecord type_of_record, Office office, OccupancyArea occupancy_area, Seniority seniority, PersonalData personalData, JobsDetails jobsDetails, DashboardStudies dashboardStudies) {
+    public Person(String name, String last_name, String email, String identityPerson, String password, ProfileRole role, TypeOfRecord type_of_record, Office office, OccupancyArea occupancy_area, Seniority seniority, SubPosition sub_position, String report_me, PersonalData personalData, JobsDetails jobsDetails, DashboardStudies dashboardStudies) {
         this.name = name;
         this.last_name = last_name;
         this.email = email;
@@ -61,6 +63,8 @@ public class Person implements UserDetails {
         this.office = office;
         this.occupancy_area = occupancy_area;
         this.seniority = seniority;
+        this.sub_position = sub_position;
+        this.report_me = report_me;
         this.role = role;
         this.personalData = personalData;
         this.jobsDetails = jobsDetails;

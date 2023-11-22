@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import static org.springframework.security.config.Customizer.withDefaults;
 import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @Configuration
@@ -41,6 +42,7 @@ public class SecurityConfiguration {
 
                 .addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
         httpSecurity.headers().frameOptions().sameOrigin();
+        httpSecurity.cors(withDefaults());
         return httpSecurity.build();
     }
 

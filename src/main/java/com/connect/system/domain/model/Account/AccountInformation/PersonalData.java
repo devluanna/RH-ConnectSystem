@@ -27,11 +27,6 @@ public class PersonalData {
     private Location location;
 
     public PersonalData() {
-        this.date_of_birth = "Your date of birth";
-        this.telephone = "Telephone";
-        this.cpf_person = "CPF";
-        this.rg_person = "RG";
-        this.profile_image = profile_image;
         this.location = new Location();
     }
 

@@ -11,10 +11,10 @@ import java.util.List;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Long> {
-    @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonDTO(p.id, p.identityPerson,p.name, p.last_name, p.email, p.type_of_record, p.office, p.occupancy_area, p.seniority, p.role, p.password, p.status, p.personalData.id, p.jobsDetails.id, p.dashboardStudies.id) FROM Person p")
+    @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonDTO(p.id, p.identityPerson,p.name, p.last_name, p.email, p.type_of_record, p.office, p.occupancy_area, p.seniority, p.sub_position, p.report_me, p.role, p.password, p.status, p.personalData.id, p.jobsDetails.id, p.dashboardStudies.id) FROM Person p")
     List<PersonDTO> findAllUsersWithPersonalDataIds();
 
-    @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonDTO(p.id, p.identityPerson, p.name, p.last_name, p.email, p.type_of_record, p.office, p.occupancy_area, p.seniority, p.role, p.password, p.status, p.personalData.id, p.jobsDetails.id, p.dashboardStudies.id) FROM Person p WHERE p.id = :id")
+    @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonDTO(p.id, p.identityPerson, p.name, p.last_name, p.email, p.type_of_record, p.office, p.occupancy_area, p.seniority, p.sub_position, p.report_me, p.role, p.password, p.status, p.personalData.id, p.jobsDetails.id, p.dashboardStudies.id) FROM Person p WHERE p.id = :id")
     PersonDTO findUserById(@Param("id") Long id);
 
     @Query("SELECT p FROM Person p WHERE p.identityPerson = :identityPerson")

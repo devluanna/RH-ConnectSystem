@@ -24,7 +24,6 @@ public class DashboardStudies {
     private List<Certificates> myCertificates = new ArrayList<>();
 
 
-
     public void addCertificate(Certificates certificate) {
         myCertificates.add(certificate);
     }

@@ -6,7 +6,6 @@ import java.util.ArrayList;
 
 public enum Seniority {
     LEANER("LEANER"),
-    ASSISTANT("ASSISTANT"),
     INTERN("INTERN"),
     TRAINEE("TRAINEE"),
     JUNIOR("JUNIOR"),

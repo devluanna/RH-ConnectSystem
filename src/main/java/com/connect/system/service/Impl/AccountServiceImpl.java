@@ -1,10 +1,14 @@
 package com.connect.system.service.Impl;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
+import com.connect.system.domain.model.Account.EntityPerson.ProfileRole;
+import com.connect.system.domain.model.Account.Jobs.SubPosition;
 import com.connect.system.domain.model.Account.ResponseDTO.UpdatePersonDTO;
 import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
 import com.connect.system.domain.model.Account.Jobs.JobsDetails;
 import com.connect.system.domain.model.Account.DashboardStudies.DashboardStudies;
+import com.connect.system.domain.model.System.Squad.Members;
+import com.connect.system.domain.repository.System.MembersSquadRepository;
 import com.connect.system.domain.repository.User.DashboardStudiesRepository;
 import com.connect.system.domain.repository.User.JobDetailsRepository;
 import com.connect.system.domain.repository.User.PersonRepository;
@@ -12,6 +16,7 @@ import com.connect.system.domain.repository.User.PersonalDataRepository;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
 import com.connect.system.service.AccountService;
 import com.connect.system.utils.MailConfig;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.BeanUtils;
@@ -30,9 +35,13 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     PersonalDataRepository personalDataRepository;
     @Autowired
-    JobDetailsRepository jobDetailsRepository;
-    @Autowired
     DashboardStudiesRepository dashboardStudiesRepository;
+
+    @Autowired
+    MembersSquadRepository membersSquadRepository;
+
+    @Autowired
+    JobDetailsRepository jobDetailsRepository;
 
     @Autowired
     MailConfig emailService;
@@ -65,18 +74,42 @@ public class AccountServiceImpl implements AccountService {
     }
 
 
+    private void validateCreateRoleManager(PersonDTO data) {
+        if (ProfileRole.valueOf(String.valueOf(data.getRole())) == ProfileRole.MANAGER) {
+            data.setSub_position(SubPosition.valueOf(SubPosition.PROJECTMANAGER.name()));
+        }
+    }
+
+    private void validateCreateRoleUser(PersonDTO data) {
+        if (ProfileRole.valueOf(String.valueOf(data.getRole())) == ProfileRole.USER) {
+            data.setSub_position(SubPosition.valueOf(SubPosition.NOTAPPLICABLE.name()));
+        }
+    }
+
+    private void validateCreateRoleRh(PersonDTO data) {
+        if (ProfileRole.valueOf(String.valueOf(data.getRole())) == ProfileRole.RH) {
+            data.setSub_position(SubPosition.valueOf(SubPosition.ADMINISTRATIVEMANAGEMENT.name()));
+        }
+    }
+
+
     @Override
     @Transactional
     public PersonDTO createPerson(Person newUser, PersonDTO data, PersonalData personalDataUser, JobsDetails userJobInformation, DashboardStudies dashboardStudies)  {
 
         validateExistsEmail(data);
+        validateCreateRoleManager(data);
+        validateCreateRoleUser(data);
+        validateCreateRoleRh(data);
 
         Person userCreated = new Person
                 (data.getName(), data.getLast_name(), data.getEmail(), data.getIdentityPerson(),
                         data.getPassword(), data.getRole(), data.getType_of_record(), data.getOffice(), data.getOccupancy_area(),
-                        data.getSeniority(), personalDataUser, userJobInformation, dashboardStudies);
+                        data.getSeniority(), data.getSub_position(), data.getReport_me(), personalDataUser, userJobInformation, dashboardStudies);
 
-        String passwordUser = generateRandomPassword();
+
+        //String passwordUser = generateRandomPassword();
+        String passwordUser = "12345678";
         String encryptedPassword = passwordEncoder.encode(passwordUser);
         userCreated.setPassword(encryptedPassword);
 
@@ -86,26 +119,71 @@ public class AccountServiceImpl implements AccountService {
 
         validationOfPersonalDataFields(personalDataUser, savedUser.getId());
         validationOfJobsDetailsFields(userJobInformation, savedUser.getId());
-        validationOfDasbboardStudiesFields(dashboardStudies, savedUser.getId());
+        validationOfDashboardStudiesFields(dashboardStudies, savedUser.getId());
 
         savingInformationId(data,personalDataUser, userJobInformation, dashboardStudies);
 
         BeanUtils.copyProperties(savedUser, data);
         //sendWelcomeEmail(data, savedUser, passwordUser);
-
         return (data);
     }
 
+
     @Override
-    public UpdatePersonDTO update(Person p, Long id, UpdatePersonDTO updatePersonDTO)  {
+    @Transactional
+    public UpdatePersonDTO toUpdatePerson(Person person, Long id, UpdatePersonDTO updatePersonDTO) {
         Person accountUser = findById(id);
 
         modelMapper.map(updatePersonDTO, accountUser);
-        modelMapper.map(accountUser, p);
+        modelMapper.map(accountUser, person);
 
-        Person updatedUser = personRepository.save(p);
+        Person updatedUser = personRepository.save(person);
+
+        processToGetMemberID(accountUser);
 
         return modelMapper.map(updatedUser, UpdatePersonDTO.class);
+    }
+
+    private void processToGetMemberID(Person accountUser) {
+        JobsDetails jobsDetails = accountUser.getJobsDetails();
+
+        if (jobsDetails != null) {
+            Long idMemberOfSquad = jobsDetails.getId_memberOfSquad();
+
+            if (idMemberOfSquad != null) {
+                Members members = membersSquadRepository.findById(idMemberOfSquad)
+                        .orElseThrow(() -> new IllegalArgumentException("Members not found: " + idMemberOfSquad));
+
+                Long idAccount = members.getId_account();
+
+                if (idAccount != null && idAccount.equals(accountUser.getId())) {
+
+                    updateSubPositionInMembers(members, accountUser);
+
+                    System.out.println("SubPosition updated successfully.");
+                } else {
+                    System.out.println("id_account in Members does not match the provided id.");
+                }
+            } else {
+                updateUserInfo(accountUser);
+            }
+        } else {
+            System.out.println("JobsDetails is null.");
+        }
+    }
+
+
+    private void updateUserInfo(Person accountUser) {
+       accountUser.setSub_position(SubPosition.valueOf(String.valueOf(accountUser.getSub_position())));
+       personRepository.save(accountUser);
+    }
+
+    @Transactional
+    private void updateSubPositionInMembers(Members members, Person accountUser) {
+        if (members != null) {
+            members.setSub_position(String.valueOf(accountUser.getSub_position()));
+            membersSquadRepository.save(members);
+        }
     }
 
     private void validateExistsEmail(PersonDTO data) {
@@ -188,17 +266,18 @@ public class AccountServiceImpl implements AccountService {
         String occupancyArea = String.valueOf(accountUser.get().getOccupancy_area());
         String seniorityAccount = String.valueOf(accountUser.get().getSeniority());
 
+
         if(userJobInformation != null) {
             userJobInformation.setId_account(idAccount);
             userJobInformation.setIdentity(identity_account);
             userJobInformation.setSeniority(seniorityAccount);
             userJobInformation.setType_of_record(typeOfRecord);
             userJobInformation.setOccupancy_area(occupancyArea);
-            userJobInformation.setOffice(office);}
-
+            userJobInformation.setOffice(office);
+        }
     }
 
-    private void validationOfDasbboardStudiesFields(DashboardStudies dashboardStudies, Long id) {
+    private void validationOfDashboardStudiesFields(DashboardStudies dashboardStudies, Long id) {
         Optional<Person> account = personRepository.findById(id);
 
         Long idAccount = account.get().getId();

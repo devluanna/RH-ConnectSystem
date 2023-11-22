@@ -24,14 +24,5 @@ public class Location {
     private String complement;
     private int house_number;
 
-    public Location() {
-        this.country = "Country";
-        this.state = "State";
-        this.city = "City";
-        this.address = "Your Address here";
-        this.zip_code = 10000000;
-        this.complement = "For example: BLOCK 12 and Apartment 12";
-        this.house_number = 1;
-    }
 
 }

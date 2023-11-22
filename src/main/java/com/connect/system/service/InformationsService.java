@@ -11,10 +11,10 @@ public interface InformationsService {
 
     PersonalData findByIdPersonalData(Long id_personalData);
 
-    PersonalDataDTO updatePersonalData(PersonalData personalData, Long id_personalData, PersonalDataDTO personalDataDTO);
+    PersonalData toUpdatePersonalData(PersonalData personalData, Long id_personalData);
 
     PersonalDataDTO getById(Long id_personalData);
 
-    Location updateLocation(Location location, Long id_location);
+    Location toUpdateLocation(Location location, Long id_location);
 
 }

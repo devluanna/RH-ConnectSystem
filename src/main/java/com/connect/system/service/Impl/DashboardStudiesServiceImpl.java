@@ -3,14 +3,20 @@ package com.connect.system.service.Impl;
 import com.connect.system.domain.model.Account.DashboardStudies.AcademicEducation;
 import com.connect.system.domain.model.Account.DashboardStudies.Certificates;
 import com.connect.system.domain.model.Account.DashboardStudies.DashboardStudies;
+import com.connect.system.domain.model.Account.EntityPerson.Person;
 import com.connect.system.domain.repository.User.AcademicEducationRepository;
 import com.connect.system.domain.repository.User.CertificatesRepository;
 import com.connect.system.domain.repository.User.DashboardStudiesRepository;
 import com.connect.system.service.DashboardStudiesService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import com.connect.system.utils.Utils;
+
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -18,10 +24,8 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
 
     @Autowired
     DashboardStudiesRepository dashboardStudiesRepository;
-
     @Autowired
     CertificatesRepository certificatesRepository;
-
     @Autowired
     AcademicEducationRepository academicEducationRepository;
 
@@ -31,6 +35,7 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
         return dashboardStudiesRepository.findById(dashboardId).orElseThrow(NoSuchElementException::new);
 
     }
+
 
     @Override
     public Certificates shareMyCertificates(DashboardStudies dashboardStudies, Long dashboardId, Certificates certificates) {
@@ -81,30 +86,78 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
     @Override
     public Certificates toUpdateCertificate(Certificates certificates, Long idCertificate) {
 
-        certificates.setId_certificate(idCertificate);
+         Certificates existingCertificate = certificatesRepository.findById(idCertificate).orElse(null);
 
-        Certificates existingCertificate = certificatesRepository.findById(idCertificate).orElse(null);
+         Long id_DashboardStudies = existingCertificate.getId_dashboardStudies();
+
+         Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+         if (!authenticatedUser.getDashboardStudies().getId_dashboard().equals(id_DashboardStudies)) {
+         throw new IllegalArgumentException("Access denied!");
+         }
 
         if (existingCertificate != null) {
-            certificates.setId_dashboardStudies(existingCertificate.getId_dashboardStudies());
+            Utils.copyNonNullProperties(certificates, existingCertificate);
         }
-
-        return certificatesRepository.save(certificates);
+            return certificatesRepository.save(existingCertificate);
 
     }
 
     @Override
     public AcademicEducation toUpdateAcademicStudies(AcademicEducation academic, Long idAcademicEducation) {
 
-        academic.setId_academicEducation(idAcademicEducation);
-
         AcademicEducation existingAcademicStudies = academicEducationRepository.findById(idAcademicEducation).orElse(null);
 
+        Long id_DashboardStudies = existingAcademicStudies.getId_dashboardStudies();
+
+        Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        if (!authenticatedUser.getDashboardStudies().getId_dashboard().equals(id_DashboardStudies)) {
+        throw new IllegalArgumentException("Access denied!");
+         }
+
         if (existingAcademicStudies != null) {
-            academic.setId_dashboardStudies(existingAcademicStudies.getId_dashboardStudies());
+            Utils.copyNonNullProperties(academic, existingAcademicStudies);
         }
 
-        return academicEducationRepository.save(academic);
+        return academicEducationRepository.save(existingAcademicStudies);
+    }
+
+    @Override
+    public DashboardStudies getCertificatesById(Long dashboard_id) {
+
+        DashboardStudies dashboard = findDashboardById(dashboard_id);
+
+        if (dashboard != null) {
+            String user = dashboard.getIdentity();
+
+            if (user != null) {
+
+                String username = user.intern();
+
+                List<Certificates> myCertificates = certificatesRepository.findDashboardById(dashboard_id);
+                dashboard.setMyCertificates(myCertificates);
+                dashboard.setIdentity(username);
+            }
+        }
+
+        return dashboard;
+    }
+
+    @Override
+    public DashboardStudies getStudiesById(Long dashboard_id) {
+        DashboardStudies dashboard = findDashboardById(dashboard_id);
+
+        if(dashboard != null) {
+            String user = dashboard.getIdentity();
+            if(user != null) {
+                String username = user.intern();
+                List<AcademicEducation> myStudies = academicEducationRepository.findDashboardById(dashboard_id);
+                dashboard.setAcademicEducation(myStudies);
+                dashboard.setIdentity(username);
+            }
+        }
+        return dashboard;
     }
 
 

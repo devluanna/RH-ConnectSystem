@@ -23,11 +23,9 @@ public class JobsDetailsController {
 
 
     @PutMapping("/{id_jobs_details}")
-    public ResponseEntity updateJobs(@PathVariable Long id_jobs_details, @RequestBody JobsDetailsDTO jobsDetailsDTO) {
+    public ResponseEntity toUpdateJobsDetails(@PathVariable Long id_jobs_details, @RequestBody JobsDetails jobsDetails) {
 
-        JobsDetails jobsDetails = jobsService.findJobById(id_jobs_details);
-
-        JobsDetailsDTO updatedJob = jobsService.updateJobsDetails(jobsDetails, id_jobs_details, jobsDetailsDTO);
+        JobsDetails updatedJob = jobsService.toUpdateJobsDetails(jobsDetails, id_jobs_details);
         return ResponseEntity.ok(updatedJob);
 
     }

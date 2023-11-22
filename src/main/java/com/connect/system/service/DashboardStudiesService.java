@@ -16,4 +16,8 @@ public interface DashboardStudiesService {
     Certificates toUpdateCertificate(Certificates certificates, Long idCertificate);
 
     AcademicEducation toUpdateAcademicStudies(AcademicEducation academic, Long idAcademicEducation);
+
+    DashboardStudies getCertificatesById (Long dashboard_id);
+
+    DashboardStudies getStudiesById(Long dashboard_id);
 }

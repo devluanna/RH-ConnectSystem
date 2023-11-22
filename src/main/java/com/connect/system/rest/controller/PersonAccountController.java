@@ -7,6 +7,7 @@ import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
 import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
 import com.connect.system.domain.model.Account.Jobs.JobsDetails;
 import com.connect.system.domain.model.Account.DashboardStudies.DashboardStudies;
+import com.connect.system.domain.model.System.Squad.Members;
 import com.connect.system.service.AccountService;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,11 +34,14 @@ public class PersonAccountController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updatePerson(@PathVariable Long id, @RequestBody UpdatePersonDTO updatePersonDTO) {
-
+    public ResponseEntity updatePerson(@PathVariable Long id, @RequestBody UpdatePersonDTO updatePersonDTO, Members members) {
+        if (id == null) {
+           System.out.println("N ENCONTROU");
+            return ResponseEntity.badRequest().build();
+        }
         Person account = accountService.findById(id);
 
-        UpdatePersonDTO updatedAccount = accountService.update(account, id, updatePersonDTO);
+        UpdatePersonDTO updatedAccount = accountService.toUpdatePerson(account, id, updatePersonDTO);
         return ResponseEntity.ok(updatedAccount);
     }
 

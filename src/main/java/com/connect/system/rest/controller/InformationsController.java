@@ -31,11 +31,9 @@ public class InformationsController {
     }
 
     @PutMapping("/personal-data/{id_personalData}")
-    public ResponseEntity updateData(@PathVariable Long id_personalData, @RequestBody PersonalDataDTO personalDataDTO) {
+    public ResponseEntity updateData(@PathVariable Long id_personalData, @RequestBody PersonalData personalData) {
 
-        PersonalData personalData = informationsService.findByIdPersonalData(id_personalData);
-
-        PersonalDataDTO updatedPersonalData = informationsService.updatePersonalData(personalData, id_personalData, personalDataDTO);
+        PersonalData  updatedPersonalData = informationsService.toUpdatePersonalData(personalData, id_personalData);
 
         return ResponseEntity.ok(updatedPersonalData);
     }
@@ -43,7 +41,7 @@ public class InformationsController {
     @PutMapping("/location/{id_location}")
     public ResponseEntity updateLocation(@PathVariable Long id_location, @RequestBody Location location) {
 
-        Location updatedLocation = informationsService.updateLocation(location, id_location);
+        Location updatedLocation = informationsService.toUpdateLocation(location, id_location);
 
         return ResponseEntity.ok(updatedLocation);
     }

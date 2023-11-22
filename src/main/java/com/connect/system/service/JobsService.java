@@ -9,7 +9,7 @@ public interface JobsService  {
 
     JobsDetails findJobById(Long id_jobs_details);
 
-    JobsDetailsDTO updateJobsDetails(JobsDetails jobsDetails, Long id_jobs_details, JobsDetailsDTO jobsDetailsDTO);
+    JobsDetails toUpdateJobsDetails(JobsDetails jobsDetails, Long id_jobs_details);
 
     JobsDetailsDTO getJobById(Long id_jobs_details);
 

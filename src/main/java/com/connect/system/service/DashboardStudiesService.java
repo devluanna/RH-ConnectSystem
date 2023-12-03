@@ -7,17 +7,17 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface DashboardStudiesService {
-    DashboardStudies findDashboardById(Long dashboardId);
+    DashboardStudies findDashboardById(Integer dashboardId);
 
-    Certificates shareMyCertificates(DashboardStudies dashboard, Long dashboardId, Certificates certificates);
+    Certificates shareMyCertificates(DashboardStudies dashboard, Integer dashboardId, Certificates certificates);
 
-    AcademicEducation shareMyStudies(DashboardStudies dashboard, Long dashboardId, AcademicEducation academic);
+    AcademicEducation shareMyStudies(DashboardStudies dashboard, Integer dashboardId, AcademicEducation academic);
 
-    Certificates toUpdateCertificate(Certificates certificates, Long idCertificate);
+    Certificates toUpdateCertificate(Certificates certificates, Integer idCertificate);
 
-    AcademicEducation toUpdateAcademicStudies(AcademicEducation academic, Long idAcademicEducation);
+    AcademicEducation toUpdateAcademicStudies(AcademicEducation academic, Integer idAcademicEducation);
 
-    DashboardStudies getCertificatesById (Long dashboard_id);
+    DashboardStudies getCertificatesById (Integer dashboard_id);
 
-    DashboardStudies getStudiesById(Long dashboard_id);
+    DashboardStudies getStudiesById(Integer dashboard_id);
 }

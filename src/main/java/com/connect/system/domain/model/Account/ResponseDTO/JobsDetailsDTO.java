@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JobsDetailsDTO {
-    private Long id_job_details;
+    private Integer id_job_details;
 
-    private Long id_account;
+    private Integer id_account;
     private String identity;
 
-    private Long id_squad;
-    private Long id_memberOfSquad;
+    private Integer id_squad;
+    private Integer id_memberOfSquad;
     private String name_squad;
 
     private String description;

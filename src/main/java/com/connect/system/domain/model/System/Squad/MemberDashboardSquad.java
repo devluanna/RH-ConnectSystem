@@ -13,7 +13,7 @@ public class MemberDashboardSquad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_dashboardMembers;
+    private int id_dashboardMembers;
 
     @JsonIgnore
     @OneToOne

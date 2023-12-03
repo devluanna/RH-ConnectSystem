@@ -1,6 +1,5 @@
-package com.connect.system.rest.controller;
+package com.connect.system.rest.controllers.User;
 
-import com.connect.system.domain.model.Account.ResponseDTO.LocationDTO;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonalDataDTO;
 import com.connect.system.domain.model.Account.AccountInformation.Location;
 import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
@@ -19,7 +18,7 @@ public class InformationsController {
     InformationsService informationsService;
 
     @GetMapping("/user/{id_personalData}")
-    public ResponseEntity<PersonalDataDTO> getById(@PathVariable Long id_personalData) {
+    public ResponseEntity<PersonalDataDTO> getById(@PathVariable Integer id_personalData) {
 
         PersonalDataDTO personalData = informationsService.getById(id_personalData);
 
@@ -31,7 +30,7 @@ public class InformationsController {
     }
 
     @PutMapping("/personal-data/{id_personalData}")
-    public ResponseEntity updateData(@PathVariable Long id_personalData, @RequestBody PersonalData personalData) {
+    public ResponseEntity updateData(@PathVariable Integer id_personalData, @RequestBody PersonalData personalData) {
 
         PersonalData  updatedPersonalData = informationsService.toUpdatePersonalData(personalData, id_personalData);
 
@@ -39,7 +38,7 @@ public class InformationsController {
     }
 
     @PutMapping("/location/{id_location}")
-    public ResponseEntity updateLocation(@PathVariable Long id_location, @RequestBody Location location) {
+    public ResponseEntity updateLocation(@PathVariable Integer id_location, @RequestBody Location location) {
 
         Location updatedLocation = informationsService.toUpdateLocation(location, id_location);
 

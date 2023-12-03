@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Data
 public class UpdatePersonDTO {
-    private Long id;
+    private Integer id;
     private String identityPerson;
     private String name;
     private String last_name;

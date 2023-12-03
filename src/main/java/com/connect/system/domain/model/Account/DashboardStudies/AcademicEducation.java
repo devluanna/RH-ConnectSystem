@@ -14,9 +14,9 @@ public class AcademicEducation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_academicEducation;
+    private Integer id_academicEducation;
 
-    private Long id_dashboardStudies;
+    private Integer id_dashboardStudies;
 
     private String education_institution;
     private String course_name;

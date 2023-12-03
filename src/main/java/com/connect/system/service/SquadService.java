@@ -9,17 +9,17 @@ import java.util.List;
 
 @Service
 public interface SquadService {
-    Squad createSquad(Long id_squad, Squad squad, MemberDashboardSquad memberDashboardSquad);
+    Squad createSquad(Integer id_squad, Squad squad, MemberDashboardSquad memberDashboardSquad);
 
     List<Squad> getAllSquads();
 
-    Members addMemberToSquad(Long squad_id, Long id, Long id_dashboardMembers, Members members);
+    Members addMemberToSquad(Integer squad_id, Integer id, Integer id_dashboardMembers, Members members);
 
-    Squad getSquadsWithMembersById(Long id_squad);
+    Squad getSquadsWithMembersById(Integer id_squad);
 
-    Squad toUpdateSquad(Long id_squad, Squad squads, Long id);
+    Squad toUpdateSquad(Integer id_squad, Squad squads, Integer id);
 
-    void removeMemberFromSquad(Long id_squad, Long id_member);
+    void removeMemberFromSquad(Integer id_squad, Integer id_member);
 
     //Squad findSquadById(Long id_squad);
 

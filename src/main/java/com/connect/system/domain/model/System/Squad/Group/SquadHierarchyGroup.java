@@ -10,6 +10,8 @@ import java.util.List;
 @Data
 public class SquadHierarchyGroup {
 
+    //GRUPO DA SQUAD, CRIA-SE AUTOMATICAMENTE TODA VEZ QUE UMA SQUAD NASCE
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id_group_squad; //id do grupo

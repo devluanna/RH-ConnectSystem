@@ -1,4 +1,4 @@
-package com.connect.system.rest.controller;
+package com.connect.system.rest.controllers.User;
 
 
 import com.connect.system.domain.model.Account.ResponseDTO.JobsDetailsDTO;
@@ -23,7 +23,7 @@ public class JobsDetailsController {
 
 
     @PutMapping("/{id_jobs_details}")
-    public ResponseEntity toUpdateJobsDetails(@PathVariable Long id_jobs_details, @RequestBody JobsDetails jobsDetails) {
+    public ResponseEntity toUpdateJobsDetails(@PathVariable Integer id_jobs_details, @RequestBody JobsDetails jobsDetails) {
 
         JobsDetails updatedJob = jobsService.toUpdateJobsDetails(jobsDetails, id_jobs_details);
         return ResponseEntity.ok(updatedJob);
@@ -31,7 +31,7 @@ public class JobsDetailsController {
     }
 
     @GetMapping("/get/{id_jobs_details}")
-    public ResponseEntity<JobsDetailsDTO> getJobById(@PathVariable Long id_jobs_details) {
+    public ResponseEntity<JobsDetailsDTO> getJobById(@PathVariable Integer id_jobs_details) {
         JobsDetailsDTO jobsDetailsGetDTO = jobsService.getJobById(id_jobs_details);
 
         if(jobsDetailsGetDTO == null) {

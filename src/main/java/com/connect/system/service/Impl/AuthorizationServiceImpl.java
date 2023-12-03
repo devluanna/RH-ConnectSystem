@@ -27,7 +27,7 @@ public class AuthorizationServiceImpl implements UserDetailsService {
     }
 
 
-    public UserDetails loadUserById(Long id) throws UsernameNotFoundException {
+    public UserDetails loadUserById(Integer id) throws UsernameNotFoundException {
         return accountService.findById(id);
     }
 }

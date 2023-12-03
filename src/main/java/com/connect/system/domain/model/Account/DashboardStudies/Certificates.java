@@ -14,9 +14,9 @@ public class Certificates {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_certificate;
+    private Integer id_certificate;
 
-    private Long id_dashboardStudies;
+    private Integer id_dashboardStudies;
 
     private String name_certificate;
     private String issuing_organization;

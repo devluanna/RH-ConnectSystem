@@ -38,24 +38,24 @@ public class InformationsServiceImpl implements InformationsService {
         this.modelMapper = modelMapper;
     }
 
-    public Location findLocationById(Long id_location) {
+    public Location findLocationById(Integer id_location) {
         return locationRepository.findById(id_location).orElseThrow(NoSuchElementException::new);
     }
 
     @Override
-    public PersonalData findByIdPersonalData(Long id_personalData) {
+    public PersonalData findByIdPersonalData(Integer id_personalData) {
         return personalDataRepository.findById(id_personalData).orElseThrow(NoSuchElementException::new);
     }
 
 
     @Override
     @Transactional
-    public PersonalDataDTO getById(Long id_personalData) {
+    public PersonalDataDTO getById(Integer id_personalData) {
         return personalDataRepository.findInformationsById(id_personalData);
     }
 
     @Override
-    public Location toUpdateLocation(Location location, Long id_location) {
+    public Location toUpdateLocation(Location location, Integer id_location) {
 
        Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -75,7 +75,7 @@ public class InformationsServiceImpl implements InformationsService {
 
 
     @Override
-    public PersonalData toUpdatePersonalData(PersonalData personalData, Long id_personalData) {
+    public PersonalData toUpdatePersonalData(PersonalData personalData, Integer id_personalData) {
 
         Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 

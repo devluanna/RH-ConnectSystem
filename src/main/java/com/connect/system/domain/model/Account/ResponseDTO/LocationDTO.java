@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class LocationDTO {
-    private Long id_location;
+    private Integer id_location;
 
     private String country;
     private String state;

@@ -57,17 +57,17 @@ public class SquadServiceImpl implements SquadService {
     }
 
     @Transactional
-    public Squad findSquadById(Long id_squad) {
+    public Squad findSquadById(Integer id_squad) {
         return squadRepository.findById(id_squad).orElse(null);
     }
 
     @Transactional
-    public Squad findSquadWithMembers(Long id_squad) {
+    public Squad findSquadWithMembers(Integer id_squad) {
         return squadRepository.findSquadWithMembers(id_squad);
     }
 
     @Override
-    public Squad getSquadsWithMembersById(Long id_squad) {
+    public Squad getSquadsWithMembersById(Integer id_squad) {
         Squad squad = findSquadById(id_squad);
 
         if (squad != null) {
@@ -81,7 +81,7 @@ public class SquadServiceImpl implements SquadService {
 
     @Override
     @Transactional
-    public Squad createSquad(Long id_squad, Squad squad, MemberDashboardSquad memberDashboardSquad) {
+    public Squad createSquad(Integer id_squad, Squad squad, MemberDashboardSquad memberDashboardSquad) {
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!authentication.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_MANAGER"))) {
@@ -125,7 +125,7 @@ public class SquadServiceImpl implements SquadService {
 
     @Override
     @Transactional
-    public Members addMemberToSquad(Long squad_id, Long id, Long id_dashboardMembers, Members members) {
+    public Members addMemberToSquad(Integer squad_id, Integer id, Integer id_dashboardMembers, Members members) {
         Optional<Squad> squadOptional = squadRepository.findById(squad_id);
         Optional<Person> personOptional = personRepository.findById(id);
         Optional<MemberDashboardSquad> allMembersOptional = dashboardMembersSquadRepository.findById(id_dashboardMembers);
@@ -187,7 +187,7 @@ public class SquadServiceImpl implements SquadService {
 
     }
 
-    private boolean isMemberAlreadyInSquad(MemberDashboardSquad allMembers, Long member_id) {
+    private boolean isMemberAlreadyInSquad(MemberDashboardSquad allMembers, Integer member_id) {
         return allMembers.getMembers().stream()
                 .anyMatch(member -> member_id.equals(member.getId_account()));
     }
@@ -208,7 +208,7 @@ public class SquadServiceImpl implements SquadService {
 
 
     @Override
-    public void removeMemberFromSquad(Long id_squad, Long id_member) {
+    public void removeMemberFromSquad(Integer id_squad, Integer id_member) {
         try {
             Squad squad = squadRepository.findById(id_squad).orElseThrow(() -> new IllegalArgumentException("Squad not found"));
             Members memberToRemove = membersSquadRepository.findById(id_member).orElseThrow(() -> new IllegalArgumentException("Member not found"));
@@ -255,7 +255,7 @@ public class SquadServiceImpl implements SquadService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public Squad toUpdateSquad(Long id_squad, Squad squads, Long id) {
+    public Squad toUpdateSquad(Integer id_squad, Squad squads, Integer id) {
 
         Squad existingSquad = squadRepository.findById(id_squad).orElse(null);
 
@@ -286,7 +286,7 @@ public class SquadServiceImpl implements SquadService {
         return squadRepository.save(existingSquad);
     }
 
-    private void editFieldTeachLeadSquad(Squad squads, Long id_squad) {
+    private void editFieldTeachLeadSquad(Squad squads, Integer id_squad) {
         Squad existingSquad = squadRepository.findById(id_squad).orElse(null);
 
         if (existingSquad != null) {
@@ -308,7 +308,7 @@ public class SquadServiceImpl implements SquadService {
         }
     }
 
-    private void editFieldProjectManagerSquad(Squad squads, Long id_squad, Person person) {
+    private void editFieldProjectManagerSquad(Squad squads, Integer id_squad, Person person) {
         Squad existingSquad = squadRepository.findById(id_squad).orElse(null);
 
         if (existingSquad != null) {

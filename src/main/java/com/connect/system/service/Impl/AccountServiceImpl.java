@@ -64,12 +64,12 @@ public class AccountServiceImpl implements AccountService {
 
    @Override
    @Transactional
-   public PersonDTO getUserById(Long id) {
+   public PersonDTO getUserById(Integer id) {
        return personRepository.findUserById(id);
    }
 
     @Override
-    public Person findById(Long id) {
+    public Person findById(Integer id) {
         return personRepository.findById(id).orElseThrow(NoSuchElementException::new);
     }
 
@@ -131,7 +131,7 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public UpdatePersonDTO toUpdatePerson(Person person, Long id, UpdatePersonDTO updatePersonDTO) {
+    public UpdatePersonDTO toUpdatePerson(Person person, Integer id, UpdatePersonDTO updatePersonDTO) {
         Person accountUser = findById(id);
 
         modelMapper.map(updatePersonDTO, accountUser);
@@ -148,13 +148,13 @@ public class AccountServiceImpl implements AccountService {
         JobsDetails jobsDetails = accountUser.getJobsDetails();
 
         if (jobsDetails != null) {
-            Long idMemberOfSquad = jobsDetails.getId_memberOfSquad();
+            Integer idMemberOfSquad = jobsDetails.getId_memberOfSquad();
 
             if (idMemberOfSquad != null) {
                 Members members = membersSquadRepository.findById(idMemberOfSquad)
                         .orElseThrow(() -> new IllegalArgumentException("Members not found: " + idMemberOfSquad));
 
-                Long idAccount = members.getId_account();
+                Integer idAccount = members.getId_account();
 
                 if (idAccount != null && idAccount.equals(accountUser.getId())) {
 
@@ -256,10 +256,10 @@ public class AccountServiceImpl implements AccountService {
         return password.toString();
     }
 
-    private void validationOfJobsDetailsFields(JobsDetails userJobInformation, Long id) {
+    private void validationOfJobsDetailsFields(JobsDetails userJobInformation, Integer id) {
         Optional<Person> accountUser = personRepository.findById(id);
 
-        Long idAccount = accountUser.get().getId();
+        Integer idAccount = accountUser.get().getId();
         String identity_account = accountUser.get().getIdentityPerson();
         String typeOfRecord = String.valueOf(accountUser.get().getType_of_record());
         String office = String.valueOf(accountUser.get().getOffice());
@@ -277,10 +277,10 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    private void validationOfDashboardStudiesFields(DashboardStudies dashboardStudies, Long id) {
+    private void validationOfDashboardStudiesFields(DashboardStudies dashboardStudies, Integer id) {
         Optional<Person> account = personRepository.findById(id);
 
-        Long idAccount = account.get().getId();
+        Integer idAccount = account.get().getId();
         String identity_account = account.get().getIdentityPerson();
 
         if (dashboardStudies != null) {
@@ -292,10 +292,10 @@ public class AccountServiceImpl implements AccountService {
 
     }
 
-    private void validationOfPersonalDataFields(PersonalData personalDataUser, Long id) {
+    private void validationOfPersonalDataFields(PersonalData personalDataUser, Integer id) {
         Optional<Person> account = personRepository.findById(id);
 
-        Long idAccount = account.get().getId();
+        Integer idAccount = account.get().getId();
         String identity_account = account.get().getIdentityPerson();
 
         if (personalDataUser != null) {

@@ -7,14 +7,14 @@ import lombok.Data;
 @Data
 public class Members {
 
-    private Long id_dashboardMembers;
+    private int id_dashboardMembers;
 
     @Id
-    private Long id_member;
+    private int id_member;
 
-    private Long id_squad;
+    private int id_squad;
     private String name_squad;
-    private Long id_account;
+    private int id_account;
     private String identity;
     private String name;
     private String last_name;

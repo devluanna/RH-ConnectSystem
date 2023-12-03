@@ -20,7 +20,7 @@ public class Squad {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_squad;
+    private int id_squad;
 
     private String name_squad;
 
@@ -31,8 +31,7 @@ public class Squad {
     private String customer_project; //TERCERIZADO/INTERNO
     private StatusSquad status; //ATIVO ou INATIVO = se tiver vagas relacionadas
 
-    private String area_squad; //SEGURANCA, DESENVOLVIMENTO BACKEND, DESENVOLVIMENTO FULLSTACK, PRODUCTS, (CLASSE COMMUNITY tecnologia ou RH)
-
+    private String area_squad; //(COMMUNITYs CLASS) SEGURANCA, DESENVOLVIMENTO BACKEND, DESENVOLVIMENTO FULLSTACK, PRODUCTS
     //FAZER LOGICA PRA ATRELAR UM TIPO DE TYPEOFRECORD EM UMA COMUNIDADE? PRA FILTRAR?
     // >>> SE FOR TECH > STREAM FOREACH LISTAR COMUNIDADES RELACIONADAS A ELE
 

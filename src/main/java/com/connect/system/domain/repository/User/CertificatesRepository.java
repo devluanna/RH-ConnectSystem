@@ -9,8 +9,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface CertificatesRepository extends JpaRepository<Certificates, Long> {
+public interface CertificatesRepository extends JpaRepository<Certificates, Integer> {
 
     @Query("SELECT c FROM Certificates c WHERE c.id_dashboardStudies = :id_dashboardStudies")
-    List<Certificates> findDashboardById(@Param("id_dashboardStudies") Long id_dashboardStudies);
+    List<Certificates> findDashboardById(@Param("id_dashboardStudies") Integer id_dashboardStudies);
 }

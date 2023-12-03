@@ -13,10 +13,10 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MembersSquadRepository extends JpaRepository<Members, Long> {
+public interface MembersSquadRepository extends JpaRepository<Members, Integer> {
 
     @Query("SELECT s.allMembers.members FROM Squad s WHERE s.id_squad = :id_squad")
-    List<Members> findMembersBySquadId(@Param("id_squad") Long id_squad);
+    List<Members> findMembersBySquadId(@Param("id_squad") Integer id_squad);
 
 
 }

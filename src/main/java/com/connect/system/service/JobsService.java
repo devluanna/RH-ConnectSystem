@@ -7,10 +7,10 @@ import org.springframework.stereotype.Service;
 @Service
 public interface JobsService  {
 
-    JobsDetails findJobById(Long id_jobs_details);
+    JobsDetails findJobById(Integer id_jobs_details);
 
-    JobsDetails toUpdateJobsDetails(JobsDetails jobsDetails, Long id_jobs_details);
+    JobsDetails toUpdateJobsDetails(JobsDetails jobsDetails, Integer id_jobs_details);
 
-    JobsDetailsDTO getJobById(Long id_jobs_details);
+    JobsDetailsDTO getJobById(Integer id_jobs_details);
 
 }

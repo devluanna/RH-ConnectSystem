@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class PersonDTO {
-    private Long id;
+    private Integer id;
     private String identityPerson;
     private String name;
     private String last_name;
@@ -25,8 +25,8 @@ public class PersonDTO {
     private ProfileRole role;
     private String password;
     private Status status;
-    private Long personalDataId;
-    private Long jobsDetailsId;
-    private Long dashboardStudiesId;
+    private Integer personalDataId;
+    private Integer jobsDetailsId;
+    private Integer dashboardStudiesId;
 
 }

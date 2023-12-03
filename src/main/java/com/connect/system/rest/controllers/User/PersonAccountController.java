@@ -1,4 +1,4 @@
-package com.connect.system.rest.controller;
+package com.connect.system.rest.controllers.User;
 
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
@@ -34,7 +34,8 @@ public class PersonAccountController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity updatePerson(@PathVariable Long id, @RequestBody UpdatePersonDTO updatePersonDTO, Members members) {
+    public ResponseEntity updatePerson(@PathVariable Integer id, @RequestBody UpdatePersonDTO updatePersonDTO, Members members) {
+
         if (id == null) {
            System.out.println("N ENCONTROU");
             return ResponseEntity.badRequest().build();
@@ -46,7 +47,7 @@ public class PersonAccountController {
     }
 
     @GetMapping("/user/{id}")
-    public ResponseEntity <PersonDTO> getUserById(@PathVariable Long id) {
+    public ResponseEntity <PersonDTO> getUserById(@PathVariable Integer id) {
         PersonDTO personUser = accountService.getUserById(id);
 
      if(personUser == null) {

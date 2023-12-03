@@ -1,4 +1,4 @@
-package com.connect.system.rest.controller;
+package com.connect.system.rest.controllers.User;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
 import com.connect.system.domain.model.Account.ResponseDTO.AuthenticationDTO;
@@ -42,7 +42,7 @@ public class AuthenticationController {
     }
 
     @PutMapping("/password/{id}")
-    public ResponseEntity<String> updatePassword(@PathVariable Long id, @RequestBody @Valid PasswordDTO passwordDTO) {
+    public ResponseEntity<String> updatePassword(@PathVariable Integer id, @RequestBody @Valid PasswordDTO passwordDTO) {
         Person user = accountService.findById(id);
 
         user.setPassword(passwordDTO.getPassword());

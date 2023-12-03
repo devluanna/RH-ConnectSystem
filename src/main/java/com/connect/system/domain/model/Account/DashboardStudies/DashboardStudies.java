@@ -12,9 +12,9 @@ public class DashboardStudies {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_dashboard;
+    private Integer id_dashboard;
 
-    private Long id_account;
+    private Integer id_account;
     private String identity;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)

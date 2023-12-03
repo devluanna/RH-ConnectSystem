@@ -31,14 +31,14 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
 
 
     @Override
-    public DashboardStudies findDashboardById(Long dashboardId) {
+    public DashboardStudies findDashboardById(Integer dashboardId) {
         return dashboardStudiesRepository.findById(dashboardId).orElseThrow(NoSuchElementException::new);
 
     }
 
 
     @Override
-    public Certificates shareMyCertificates(DashboardStudies dashboardStudies, Long dashboardId, Certificates certificates) {
+    public Certificates shareMyCertificates(DashboardStudies dashboardStudies, Integer dashboardId, Certificates certificates) {
 
         DashboardStudies serviceDashboard = findDashboardById(dashboardId);
 
@@ -60,7 +60,7 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
     }
 
     @Override
-    public AcademicEducation shareMyStudies(DashboardStudies dashboard, Long dashboardId, AcademicEducation academic) {
+    public AcademicEducation shareMyStudies(DashboardStudies dashboard, Integer dashboardId, AcademicEducation academic) {
         DashboardStudies serviceDashboard = findDashboardById(dashboardId);
 
         AcademicEducation myStudies = new AcademicEducation();
@@ -84,11 +84,11 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
     }
 
     @Override
-    public Certificates toUpdateCertificate(Certificates certificates, Long idCertificate) {
+    public Certificates toUpdateCertificate(Certificates certificates, Integer idCertificate) {
 
          Certificates existingCertificate = certificatesRepository.findById(idCertificate).orElse(null);
 
-         Long id_DashboardStudies = existingCertificate.getId_dashboardStudies();
+         Integer id_DashboardStudies = existingCertificate.getId_dashboardStudies();
 
          Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -104,11 +104,11 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
     }
 
     @Override
-    public AcademicEducation toUpdateAcademicStudies(AcademicEducation academic, Long idAcademicEducation) {
+    public AcademicEducation toUpdateAcademicStudies(AcademicEducation academic, Integer idAcademicEducation) {
 
         AcademicEducation existingAcademicStudies = academicEducationRepository.findById(idAcademicEducation).orElse(null);
 
-        Long id_DashboardStudies = existingAcademicStudies.getId_dashboardStudies();
+        Integer id_DashboardStudies = existingAcademicStudies.getId_dashboardStudies();
 
         Person authenticatedUser = (Person) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
@@ -124,7 +124,7 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
     }
 
     @Override
-    public DashboardStudies getCertificatesById(Long dashboard_id) {
+    public DashboardStudies getCertificatesById(Integer dashboard_id) {
 
         DashboardStudies dashboard = findDashboardById(dashboard_id);
 
@@ -145,7 +145,7 @@ public class DashboardStudiesServiceImpl implements DashboardStudiesService {
     }
 
     @Override
-    public DashboardStudies getStudiesById(Long dashboard_id) {
+    public DashboardStudies getStudiesById(Integer dashboard_id) {
         DashboardStudies dashboard = findDashboardById(dashboard_id);
 
         if(dashboard != null) {

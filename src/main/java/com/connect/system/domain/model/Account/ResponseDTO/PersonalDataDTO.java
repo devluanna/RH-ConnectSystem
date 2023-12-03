@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Data
 public class PersonalDataDTO  {
-   private Long id_personalData;
-   private Long id_account;
+   private Integer id_personalData;
+   private Integer id_account;
    private String identity;
    private String date_of_birth;
    private String telephone;

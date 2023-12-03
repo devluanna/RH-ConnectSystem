@@ -11,9 +11,9 @@ public class PersonalData {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id_personalData;
+    private Integer id_personalData;
 
-    private Long id_account;
+    private Integer id_account;
     private String identity;
 
     private String date_of_birth;

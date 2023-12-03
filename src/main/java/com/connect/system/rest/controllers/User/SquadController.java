@@ -1,4 +1,4 @@
-package com.connect.system.rest.controller;
+package com.connect.system.rest.controllers.User;
 
 import com.connect.system.domain.model.System.Squad.MemberDashboardSquad;
 import com.connect.system.domain.model.System.Squad.Members;
@@ -27,7 +27,7 @@ public class SquadController {
     AccountService accountService;
 
     @PostMapping("/create")
-    public ResponseEntity createSquad(@RequestBody Squad squad, Long id_squad, MemberDashboardSquad memberDashboardSquad) {
+    public ResponseEntity createSquad(@RequestBody Squad squad, Integer id_squad, MemberDashboardSquad memberDashboardSquad) {
 
         Squad newSquad = squadService.createSquad(id_squad, squad, memberDashboardSquad);
 
@@ -35,7 +35,7 @@ public class SquadController {
     }
 
     @PostMapping("/add/member/{id_dashboardMembers}/{id_squad}/{id}")
-    public ResponseEntity<Members> addMemberToSquad(@PathVariable Long id_dashboardMembers, @PathVariable Long id_squad, @PathVariable Long id, Members members){
+    public ResponseEntity<Members> addMemberToSquad(@PathVariable Integer id_dashboardMembers, @PathVariable Integer id_squad, @PathVariable Integer id, Members members){
        Members addedMembers = squadService.addMemberToSquad(id_squad, id, id_dashboardMembers, members);
 
        if (addedMembers != null) {
@@ -46,14 +46,14 @@ public class SquadController {
    }
 
     @PutMapping("/update/{id_squad}")
-    public ResponseEntity updateSquad(@PathVariable Long id_squad, @RequestBody Squad squads, Members members, Long id) {
+    public ResponseEntity updateSquad(@PathVariable Integer id_squad, @RequestBody Squad squads, Members members, Integer id) {
 
       Squad updatedSquad = squadService.toUpdateSquad(id_squad, squads, id);
       return ResponseEntity.ok(updatedSquad);}
 
 
     @GetMapping("/squad/{id_squad}")
-    public ResponseEntity<Squad> getDashboard(@PathVariable Long id_squad) {
+    public ResponseEntity<Squad> getDashboard(@PathVariable Integer id_squad) {
         Squad squads = squadService.getSquadsWithMembersById(id_squad);
 
         if(squads == null) {
@@ -77,7 +77,7 @@ public class SquadController {
 
     @DeleteMapping("/members/{id_squad}/{id_member}")
 
-    public ResponseEntity<String> removeMemberFromSquad( @PathVariable Long id_squad, @PathVariable Long id_member) {
+    public ResponseEntity<String> removeMemberFromSquad( @PathVariable Integer id_squad, @PathVariable Integer id_member) {
         try {
 
             squadService.removeMemberFromSquad(id_squad, id_member);

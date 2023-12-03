@@ -37,20 +37,20 @@ public class JobsServiceImpl implements JobsService {
 
     @Override
     @Transactional
-    public JobsDetailsDTO getJobById(Long id_jobs_details) {
+    public JobsDetailsDTO getJobById(Integer id_jobs_details) {
         return jobDetailsRepository.findJobsById(id_jobs_details);
     }
 
 
     @Override
-    public JobsDetails findJobById(Long id_jobs_details) {
+    public JobsDetails findJobById(Integer id_jobs_details) {
         return jobDetailsRepository.findById(id_jobs_details).orElseThrow(NoSuchElementException::new);
     }
 
 
 
     @Override
-    public JobsDetails toUpdateJobsDetails(JobsDetails jobsDetails, Long id_jobs_details  ) {
+    public JobsDetails toUpdateJobsDetails(JobsDetails jobsDetails, Integer id_jobs_details  ) {
 
        JobsDetails existingJobs = findJobById(id_jobs_details);
 

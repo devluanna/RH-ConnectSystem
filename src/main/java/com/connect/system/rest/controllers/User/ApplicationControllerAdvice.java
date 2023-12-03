@@ -1,4 +1,4 @@
-package com.connect.system.rest.controller;
+package com.connect.system.rest.controllers.User;
 
 import com.connect.system.exception.RegraNegocioException;
 import org.springframework.http.HttpHeaders;

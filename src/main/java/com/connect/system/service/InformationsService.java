@@ -9,12 +9,12 @@ import org.springframework.stereotype.Service;
 @Service
 public interface InformationsService {
 
-    PersonalData findByIdPersonalData(Long id_personalData);
+    PersonalData findByIdPersonalData(Integer id_personalData);
 
-    PersonalData toUpdatePersonalData(PersonalData personalData, Long id_personalData);
+    PersonalData toUpdatePersonalData(PersonalData personalData, Integer id_personalData);
 
-    PersonalDataDTO getById(Long id_personalData);
+    PersonalDataDTO getById(Integer id_personalData);
 
-    Location toUpdateLocation(Location location, Long id_location);
+    Location toUpdateLocation(Location location, Integer id_location);
 
 }

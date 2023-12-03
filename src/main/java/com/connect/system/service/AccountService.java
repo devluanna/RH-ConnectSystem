@@ -17,9 +17,9 @@ import java.util.List;
 public interface AccountService {
 
     PersonDTO createPerson(Person newUser, PersonDTO data, PersonalData personalDataUser, JobsDetails userJobInformation, DashboardStudies dashboardStudies) throws InvalidFormatException;
-    UpdatePersonDTO toUpdatePerson(Person person, Long id, UpdatePersonDTO updatePersonDTO);
+    UpdatePersonDTO toUpdatePerson(Person person, Integer id, UpdatePersonDTO updatePersonDTO);
     List<PersonDTO> getAllUsers();
-    Person findById(Long id);
-    PersonDTO getUserById(Long id);
+    Person findById(Integer id);
+    PersonDTO getUserById(Integer id);
 
 }

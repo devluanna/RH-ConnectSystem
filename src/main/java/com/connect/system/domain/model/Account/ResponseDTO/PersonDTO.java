@@ -20,6 +20,7 @@ public class PersonDTO {
     private Office office;
     private OccupancyArea occupancy_area;
     private Seniority seniority;
+    private String community;
     private SubPosition sub_position;
     private String report_me;
     private ProfileRole role;

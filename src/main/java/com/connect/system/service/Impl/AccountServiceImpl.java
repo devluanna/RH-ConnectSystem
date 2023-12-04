@@ -105,7 +105,7 @@ public class AccountServiceImpl implements AccountService {
         Person userCreated = new Person
                 (data.getName(), data.getLast_name(), data.getEmail(), data.getIdentityPerson(),
                         data.getPassword(), data.getRole(), data.getType_of_record(), data.getOffice(), data.getOccupancy_area(),
-                        data.getSeniority(), data.getSub_position(), data.getReport_me(), personalDataUser, userJobInformation, dashboardStudies);
+                        data.getSeniority(), data.getCommunity(), data.getSub_position(), data.getReport_me(), personalDataUser, userJobInformation, dashboardStudies);
 
 
         //String passwordUser = generateRandomPassword();

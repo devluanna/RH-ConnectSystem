@@ -29,7 +29,7 @@ public class HierarchyGroupTechnology {
 
     private String responsible; //responsavel por criar o grupo (pode ser um coord do rh)
 
-    private String ceo; //CEO dono da porra toda ESTATICO
+    private String name_ceo; //CEO dono da porra toda ESTATICO
 
     private String president; // presidente de todos ESTATICO
 
@@ -39,5 +39,6 @@ public class HierarchyGroupTechnology {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CommunityAssociates> communityAssociate = new ArrayList<>(); //Membros (outros gestores/coordenadores desse grupo hierarquico da comunidade X)
+
 
 }

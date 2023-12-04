@@ -5,7 +5,7 @@ import java.util.List;
 
 public enum Office {
 
-    CEO("CHIEFEXECUTIVEOFFICER"),
+    CEO("CEO"),
     PRESIDENT("PRESIDENT"),
     DIRECTOR("DIRECTOR"),
     HEADDELIVERY("HEADDELIVERY"),

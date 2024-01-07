@@ -1,22 +1,46 @@
 package com.connect.system.service.Impl;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
+import com.connect.system.domain.model.Account.Jobs.JobsDetails;
 import com.connect.system.domain.model.Account.Jobs.Office;
+import com.connect.system.domain.model.Account.Jobs.TypeOfRecord;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
+import com.connect.system.domain.model.System.Squad.Members;
+import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
 import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroupTechnology;
 import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
+import com.connect.system.domain.repository.System.CommunityAssociatesRepository;
 import com.connect.system.domain.repository.System.HierarchyGroupTechnologyRepository;
 import com.connect.system.domain.repository.System.TechnologyCommunityRepository;
 import com.connect.system.domain.repository.User.PersonRepository;
 import com.connect.system.service.TechnologyCommunityService;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class TechnologyCommunityServiceImpl implements TechnologyCommunityService {
+
+    //PAREI NA PARTE DE PASSAR O NOME DA COMUNIDADE PARA O OBJETO DO PERSON -- FIZ
+
+
+    //ATUALIZAR NOME DA COMUNIDADE, ATUALIZA PERSON TBM -- **FAZENDO**
+    // PAREI NA PARTE DE ATUALIZAR O OBJETO PERSON
+
+    //O MANAGER_HEAD PRECISA ENTRAR DENTRO DO GRUPO TAMBEM -- nao fiz
+
+    // DELETAR ASSOCIADO DE DENTRO DA COMUNIDADE -- nao fiz
+
+    //fazer uma busca dentro do TechnologyCommunity, verificar se existe hierarchyGroupTechnology,
+    // veficiar se existe communityAssociate, se existir, prosseguir e fazer
+    // validacao pra verificar se existe person dentro dele, atualizar o nome da comunidade
+    // do objeto person atraves disso.
+
 
     @Autowired
     TechnologyCommunityRepository technologyCommunityRepository;
@@ -24,6 +48,9 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     HierarchyGroupTechnologyRepository hierarchyGroupRepository;
     @Autowired
     PersonRepository personRepository;
+
+    @Autowired
+    CommunityAssociatesRepository communityAssociatesRepository;
 
     @Override
     public TechnologyCommunity createTechCommunity(TechnologyCommunity data, HierarchyGroupTechnology hierarchyGroupTechnology, Person person) {
@@ -39,13 +66,207 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         TechnologyCommunity newCommunitySaved = technologyCommunityRepository.save(communityCreated);
 
         refreshFieldManagerHead(data, hierarchyGroupTechnology);
-        validateFieldNameCeo(hierarchyGroupTechnology);
+        groupFieldValidator(hierarchyGroupTechnology, data);
+
+        hierarchyGroupTechnology.setCommunity_id(newCommunitySaved.getId_community());
+        System.out.println("ID DA COMUNIDADE" + hierarchyGroupTechnology.getCommunity_id());
+
+        hierarchyGroupRepository.save(hierarchyGroupTechnology);
+
 
         return newCommunitySaved;
     }
 
+
+   @Override
+   @Transactional
+    public TechnologyCommunity toUpdateCommunity(TechnologyCommunity technologyCommunity, HierarchyGroupTechnology hierarchyGroupTechnology, Integer id_community, Person person, CommunityAssociates associates) {
+
+        TechnologyCommunity existingCommunity = technologyCommunityRepository.findById(id_community)
+                .orElseThrow(() -> new EntityNotFoundException("TechnologyCommunity not found with id: " + id_community));
+
+        String communityName = existingCommunity.getName_of_community();
+
+        updateAndValidateFields(technologyCommunity, existingCommunity, hierarchyGroupTechnology);
+
+        TechnologyCommunity updatedCommunity = technologyCommunityRepository.save(existingCommunity);
+
+        HierarchyGroupTechnology existingHierarchyGroup = hierarchyGroupRepository.findByCommunityName(communityName);
+
+        CommunityAssociates existingCommunityAssociates = communityAssociatesRepository.findByCommunityName(communityName);
+
+       if (existingHierarchyGroup != null) {
+            existingHierarchyGroup.setName_community(updatedCommunity.getName_of_community());
+            hierarchyGroupRepository.save(existingHierarchyGroup);
+            
+           if(existingCommunityAssociates != null) {
+                updateFieldNameCommunityPerson(associates,technologyCommunity, updatedCommunity);
+                /*updateFieldNameCommunityAssociates(associates,technologyCommunity, updatedCommunity);*/
+            }
+        }
+
+        //*updateAndValidateFieldsGroup(technologyCommunity, existingCommunity, hierarchyGroupTechnology, updatedCommunity);
+
+        return updatedCommunity;
+    }
+
+    @Transactional
+    public void updateFieldNameCommunityPerson(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
+        List<Person> existingPersons = personRepository.findAll();
+        System.out.println("List of persons: " + existingPersons);
+
+        if (existingPersons != null) {
+            for (Person existingPerson : existingPersons) {
+
+                if (associates != null) {
+                    associates.setName_community(updatedCommunity.getName_of_community());
+                }
+
+                if (existingPerson instanceof Person) {
+                    existingPerson.setCommunity(updatedCommunity.getName_of_community());
+                }
+
+                personRepository.save(existingPerson);
+                communityAssociatesRepository.save(associates); .//bug aqui
+            }
+        }
+    }
+
+    @Transactional
+    public void updateFieldNameCommunityAssociates(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
+
+        List<CommunityAssociates> existingCommunityAssociates = communityAssociatesRepository.findAll();
+
+        if (existingCommunityAssociates != null) {
+            for (CommunityAssociates existingAssociate : existingCommunityAssociates) {
+
+                if (associates != null) {
+                    associates.setName_community(updatedCommunity.getName_of_community());
+                }
+
+                if (existingAssociate instanceof CommunityAssociates) {
+                    existingAssociate.setName_community(updatedCommunity.getName_of_community());
+                }
+
+                communityAssociatesRepository.save(associates);
+            }
+        }
+    }
+
+    @Override
+    @Transactional
+    public CommunityAssociates addCommunity(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity, Person person, Integer id) {
+        Integer communityId = technologyCommunity.getId_community();
+
+        TechnologyCommunity existingCommunity = technologyCommunityRepository.findById(communityId)
+                .orElseThrow(() -> new EntityNotFoundException("Comunidade não encontrada"));
+
+        HierarchyGroupTechnology hierarchyGroupTechnology = existingCommunity.getHierarchyGroupTechnology();
+
+        CommunityAssociates newCommunityAssociate = toCheckAssociate(communityAssociates,technologyCommunity, person);
+        
+        hierarchyGroupTechnology.addAssociates(newCommunityAssociate);
+        validateAndUpdateField(communityId, communityAssociates, technologyCommunity);
+
+        technologyCommunityRepository.save(existingCommunity);
+
+        return newCommunityAssociate;
+    }
+    
+    
+    @Transactional
+    public CommunityAssociates toCheckAssociate(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity, Person person) {
+
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users: " + existingUsers);
+
+        String fieldNameAssociate = communityAssociates.getName_associate();
+
+        if (fieldNameAssociate != null && !fieldNameAssociate.isEmpty()) {
+            List<CommunityAssociates> matchingAssociate = existingUsers.stream()
+                    .filter(user -> user.getOffice() == Office.MANAGER)
+                    .map(user -> {
+                        communityAssociates.setId_account(user.getId());
+                        communityAssociates.setName_associate(user.getName() + " " + user.getLast_name());
+                        communityAssociates.setIdentity(user.getIdentityPerson());
+                        communityAssociates.setOffice(String.valueOf(user.getOffice()));
+                        communityAssociates.setSeniority(String.valueOf(user.getSeniority()));
+
+                        updatePersonWithCommunity(user, technologyCommunity);
+
+                        return communityAssociates;
+
+                    })
+                    .collect(Collectors.toList());
+
+            if (!matchingAssociate.isEmpty()) {
+                communityAssociatesRepository.saveAll(matchingAssociate);
+            } else {
+                throw new IllegalArgumentException("User MANAGER not found");
+            }
+        }
+
+        return communityAssociates;
+    }
+
+    private void updatePersonWithCommunity(PersonDTO user, TechnologyCommunity technologyCommunity) {
+        Person existingPerson = personRepository.findById(user.getId())
+                .orElseThrow(() -> new EntityNotFoundException("Person not found"));
+
+        if (existingPerson.getCommunity() == null || existingPerson.getCommunity().isEmpty()) {
+            String communityName = technologyCommunity.getName_of_community();
+            System.out.println("COMUNIDADE ENCONTRADA: " + communityName);
+
+            if (communityName != null && !communityName.isEmpty()) {
+                existingPerson.setCommunity(communityName);
+                System.out.println("COMUNIDADE ADICIONADA: " + existingPerson.getCommunity());
+                personRepository.save(existingPerson);
+            }
+        }
+    }
+
+
+    public void validateAndUpdateField(Integer communityId, CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity) {
+        communityAssociates.setId_community(communityId);
+        communityAssociates.setName_community(technologyCommunity.getName_of_community());
+
+        communityAssociatesRepository.save(communityAssociates);
+    }
+
+
+    public void updateAndValidateFields(TechnologyCommunity updatedData, TechnologyCommunity existingCommunity, HierarchyGroupTechnology hierarchyGroupTechnology) {
+        validateHeadResponsible(updatedData);
+
+        if (updatedData.getName_of_community() != null) {
+            existingCommunity.setName_of_community(updatedData.getName_of_community());
+        }
+
+        if (updatedData.getHead_responsible() != null) {
+            existingCommunity.setHead_responsible(updatedData.getHead_responsible());
+        }
+    }
+
+
+    public void groupFieldValidator(HierarchyGroupTechnology hierarchyGroupTechnology, TechnologyCommunity data) {
+        /*validateFieldDirector(hierarchyGroupTechnology);
+        validateFieldNameCeo(hierarchyGroupTechnology);
+        validateFieldPresident(hierarchyGroupTechnology);*/
+        refreshFieldTypeGroup(hierarchyGroupTechnology);
+        refreshFieldNameCommunityGroup(data, hierarchyGroupTechnology);
+    }
     public void refreshFieldManagerHead(TechnologyCommunity data, HierarchyGroupTechnology hierarchyGroupTechnology) {
         hierarchyGroupTechnology.setManager_head(data.getHead_responsible());
+        hierarchyGroupRepository.save(hierarchyGroupTechnology);
+    }
+
+    public void refreshFieldTypeGroup(HierarchyGroupTechnology hierarchyGroupTechnology) {
+        hierarchyGroupTechnology.setType(String.valueOf(TypeOfRecord.TECHNOLOGY));
+        hierarchyGroupRepository.save(hierarchyGroupTechnology);
+
+    }
+
+    public void refreshFieldNameCommunityGroup(TechnologyCommunity data, HierarchyGroupTechnology hierarchyGroupTechnology) {
+        hierarchyGroupTechnology.setName_community(data.getName_of_community());
         hierarchyGroupRepository.save(hierarchyGroupTechnology);
     }
 
@@ -65,6 +286,8 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
             matchingUser.ifPresent(user -> {
                 System.out.println("User: " + user.getName());
                 data.setHead_responsible(user.getName() + " " + user.getLast_name());
+
+                updatePersonWithCommunity(user, data);
             });
 
             if (!matchingUser.isPresent()) {
@@ -75,7 +298,6 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
 
     public void validateFieldNameCeo(HierarchyGroupTechnology group) {
         List<PersonDTO> existingUsersCEO = personRepository.findAllUsersWithPersonalDataIds();
-        System.out.println("List of users: " + existingUsersCEO);
 
         Optional<PersonDTO> matchingUserCEO = existingUsersCEO.stream()
                 .filter(user -> user.getOffice() == Office.CEO)
@@ -88,6 +310,40 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         } else {
             System.out.println("User with CEO not found");
             throw new IllegalArgumentException("User with CEO not found");
+        }
+    }
+
+    public void validateFieldPresident(HierarchyGroupTechnology group) {
+        List<PersonDTO> existingUserPresident = personRepository.findAllUsersWithPersonalDataIds();
+
+        Optional<PersonDTO> matchingUserPresident = existingUserPresident.stream()
+                .filter(user -> user.getOffice() == Office.PRESIDENT)
+                .findFirst();
+
+        if(matchingUserPresident.isPresent()) {
+            System.out.println("User PRESIDENT found: " + matchingUserPresident.get().getName());
+            group.setPresident(matchingUserPresident.get().getName() + " " + matchingUserPresident.get().getLast_name());
+            hierarchyGroupRepository.save(group);
+        } else {
+            System.out.println("User with PRESIDENT not found");
+            throw new IllegalArgumentException("User with PRESIDENT not found");
+        }
+    }
+
+    public void validateFieldDirector(HierarchyGroupTechnology group) {
+        List<PersonDTO> existingUserDirector = personRepository.findAllUsersWithPersonalDataIds();
+
+        Optional<PersonDTO> matchingUserDirector = existingUserDirector.stream()
+                .filter(user -> user.getOffice() == Office.DIRECTOR)
+                .findFirst();
+
+        if(matchingUserDirector.isPresent()) {
+            System.out.println("User DIRECTOR found: " + matchingUserDirector.get().getName());
+            group.setDirector(matchingUserDirector.get().getName() + " " + matchingUserDirector.get().getLast_name());
+            hierarchyGroupRepository.save(group);
+        } else {
+            System.out.println("User with DIRECTOR not found");
+            throw new IllegalArgumentException("User with DIRECTOR not found");
         }
     }
 

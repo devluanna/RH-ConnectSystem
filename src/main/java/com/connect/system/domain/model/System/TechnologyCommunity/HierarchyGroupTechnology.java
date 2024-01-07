@@ -1,5 +1,6 @@
 package com.connect.system.domain.model.System.TechnologyCommunity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -21,24 +22,38 @@ public class HierarchyGroupTechnology {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id_group_of_community;
+    private Integer id_group_of_community;
 
-    private String community; // comunidade de seguranca, engenharia, desenvolvimento, arquitetura, cloud > Cada comunidade vai ter um grupo
+    @JsonIgnore
+    @OneToOne
+    @JoinColumn(name = "id_community")
+    private TechnologyCommunity technologyCommunity;
 
-    private String type; //TECNOLOGIA, ADMIN?
+   private Integer community_id;
 
-    private String responsible; //responsavel por criar o grupo (pode ser um coord do rh)
+    private String name_community;
 
-    private String name_ceo; //CEO dono da porra toda ESTATICO
+    private String type;
 
-    private String president; // presidente de todos ESTATICO
+    private String name_ceo;
 
-    private String director; // diretor de todos ESTATICO
+    private String president;
 
-    private String manager_head; // (responsible_head da classe Community) gestor acima de outros gestores (exemplo, gestor daquela area) MUDAR DEPENDENDO DA AREA / podendo ser de mais de uma ocmunidade
+    private String director;
+
+    private String manager_head;// (responsible_head da classe Community) gestor acima de outros gestores (exemplo, gestor daquela area) MUDAR DEPENDENDO DA AREA / podendo ser de mais de uma ocmunidade
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CommunityAssociates> communityAssociate = new ArrayList<>(); //Membros (outros gestores/coordenadores desse grupo hierarquico da comunidade X)
 
+    public void addAssociates(CommunityAssociates associates) {
+        communityAssociate.add(associates);
+    }
+    public void setMembers(List<CommunityAssociates> communityAssociate) {
+        this.communityAssociate = communityAssociate;
+    }
+    public List<CommunityAssociates> getCommunityAssociate() {
+        return communityAssociate;
+    }
 
 }

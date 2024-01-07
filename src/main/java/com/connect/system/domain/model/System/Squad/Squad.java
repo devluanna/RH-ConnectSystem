@@ -24,10 +24,10 @@ public class Squad {
 
     private String name_squad;
 
-    private String teach_lead; //preenchido automaticamente > se for RH OU ADMIN TEAMLEADER
-    private String project_manager; //responsavel por ter criado
+    private String teach_lead;
+    private String project_manager;
 
-    private TypeOfRecord type; //TECNOLOGIA OU ADMIN/RH
+    private TypeOfRecord type;
     private String customer_project; //TERCERIZADO/INTERNO
     private StatusSquad status; //ATIVO ou INATIVO = se tiver vagas relacionadas
 

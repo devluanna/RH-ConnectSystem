@@ -23,7 +23,6 @@ public class MemberDashboardSquad {
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Members> members = new ArrayList<>();
 
-
     public void addMembers(Members member) {
         members.add(member);
     }

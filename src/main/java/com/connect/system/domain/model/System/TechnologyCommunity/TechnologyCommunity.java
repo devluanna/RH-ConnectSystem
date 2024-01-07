@@ -6,6 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Optional;
+
 @Entity
 @Data
 @NoArgsConstructor
@@ -14,20 +16,15 @@ public class TechnologyCommunity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id_community;
+    private Integer id_community;
 
     private String name_of_community;
-
     private TypeOfRecord type;
-
-    //Pra colocar aqui ele precisa existir com um cargo XXXXXX
-    //manager_head do CommunityHierarchyGroup;
     private String head_responsible;;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "hierarchyGroupTechnology_id")
     private HierarchyGroupTechnology hierarchyGroupTechnology;
-
-
 
     public TechnologyCommunity(String name_of_community, String head_responsible, HierarchyGroupTechnology hierarchyGroupTechnology) {
         this.name_of_community = name_of_community;

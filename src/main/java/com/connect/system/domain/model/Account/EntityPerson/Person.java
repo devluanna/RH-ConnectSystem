@@ -4,6 +4,7 @@ package com.connect.system.domain.model.Account.EntityPerson;
 import com.connect.system.domain.model.Account.AccountInformation.PersonalData;
 import com.connect.system.domain.model.Account.Jobs.*;
 import com.connect.system.domain.model.Account.DashboardStudies.DashboardStudies;
+import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -41,6 +42,7 @@ public class Person implements UserDetails {
     private Seniority seniority;
     private String community;
     private String report_me;
+
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "personal_data_id")

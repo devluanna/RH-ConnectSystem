@@ -172,7 +172,6 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-
     private void updateUserInfo(Person accountUser) {
        accountUser.setSub_position(SubPosition.valueOf(String.valueOf(accountUser.getSub_position())));
        personRepository.save(accountUser);

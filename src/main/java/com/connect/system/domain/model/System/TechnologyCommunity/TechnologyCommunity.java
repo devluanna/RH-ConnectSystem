@@ -20,7 +20,7 @@ public class TechnologyCommunity {
 
     private String name_of_community;
     private TypeOfRecord type;
-    private String head_responsible;;
+    private String head_responsible;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "hierarchyGroupTechnology_id")

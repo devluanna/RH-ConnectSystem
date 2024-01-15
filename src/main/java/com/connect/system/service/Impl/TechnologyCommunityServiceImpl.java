@@ -19,18 +19,21 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class TechnologyCommunityServiceImpl implements TechnologyCommunityService {
 
-    //PAREI NA PARTE DE PASSAR O NOME DA COMUNIDADE PARA O OBJETO DO PERSON -- FIZ
+    //PAREI NO BUG DO CAMPO COMMUNITY DO PERSON QUE E HEADDELIVERY -- ** FAZENDO **
 
+    // Adicionar o HEAD no Community Associates e ai depois incluir como head? -- nao fiz
+    // Quando atualizar o head atualizar em tudo, nao e o que esta acontecendo  -- nao fiz
 
-    //ATUALIZAR NOME DA COMUNIDADE, ATUALIZA PERSON TBM -- **FAZENDO**
-    // PAREI NA PARTE DE ATUALIZAR O OBJETO PERSON
+    //ATUALIZAR NOME DA COMUNIDADE, ATUALIZA PERSON TBM -- **FIZ**
 
     //O MANAGER_HEAD PRECISA ENTRAR DENTRO DO GRUPO TAMBEM -- nao fiz
 
@@ -98,57 +101,73 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
        if (existingHierarchyGroup != null) {
             existingHierarchyGroup.setName_community(updatedCommunity.getName_of_community());
             hierarchyGroupRepository.save(existingHierarchyGroup);
-            
+
            if(existingCommunityAssociates != null) {
+               existingCommunityAssociates.setName_community(updatedCommunity.getName_of_community());
+               communityAssociatesRepository.save(existingCommunityAssociates);
                 updateFieldNameCommunityPerson(associates,technologyCommunity, updatedCommunity);
-                /*updateFieldNameCommunityAssociates(associates,technologyCommunity, updatedCommunity);*/
+
             }
         }
-
         //*updateAndValidateFieldsGroup(technologyCommunity, existingCommunity, hierarchyGroupTechnology, updatedCommunity);
 
         return updatedCommunity;
     }
 
-    @Transactional
+
+   @Transactional
     public void updateFieldNameCommunityPerson(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
-        List<Person> existingPersons = personRepository.findAll();
-        System.out.println("List of persons: " + existingPersons);
+        String updatedCommunityName = updatedCommunity.getName_of_community();
+        if (updatedCommunityName == null) {
+            throw new IllegalArgumentException("O nome da comunidade atualizada não pode ser nulo.");
+        }
 
-        if (existingPersons != null) {
-            for (Person existingPerson : existingPersons) {
+        List<CommunityAssociates> communityAssociatesList = communityAssociatesRepository.findByNameCommunity(updatedCommunityName);
 
-                if (associates != null) {
-                    associates.setName_community(updatedCommunity.getName_of_community());
-                }
 
-                if (existingPerson instanceof Person) {
-                    existingPerson.setCommunity(updatedCommunity.getName_of_community());
-                }
+        if (communityAssociatesList.isEmpty()) {
+            System.out.println("Não há associados à comunidade: " + updatedCommunityName);
+            return;
+        }
 
-                personRepository.save(existingPerson);
-                communityAssociatesRepository.save(associates); .//bug aqui
-            }
+        for (CommunityAssociates communityAssociates : communityAssociatesList) {
+            updatePersonCommunity(communityAssociates, updatedCommunityName);
         }
     }
 
-    @Transactional
-    public void updateFieldNameCommunityAssociates(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
 
-        List<CommunityAssociates> existingCommunityAssociates = communityAssociatesRepository.findAll();
+    private void updatePersonCommunity(CommunityAssociates communityAssociates, String updatedCommunityName) {
+        Integer accountId = communityAssociates.getId_account();
+        if (accountId != null) {
+            Person existingPerson = personRepository.findById(accountId)
+                    .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + accountId));
 
-        if (existingCommunityAssociates != null) {
-            for (CommunityAssociates existingAssociate : existingCommunityAssociates) {
+            existingPerson.setCommunity(updatedCommunityName);
+            personRepository.save(existingPerson);
+        }
+    }
 
-                if (associates != null) {
-                    associates.setName_community(updatedCommunity.getName_of_community());
-                }
+    public void updateHeadResponsible(TechnologyCommunity data) {
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users: " + existingUsers);
 
-                if (existingAssociate instanceof CommunityAssociates) {
-                    existingAssociate.setName_community(updatedCommunity.getName_of_community());
-                }
+        String fieldHead = data.getHead_responsible();
 
-                communityAssociatesRepository.save(associates);
+        if (fieldHead != null && !fieldHead.isEmpty()) {
+            Optional<PersonDTO> matchingUser = existingUsers.stream()
+                    .filter(user ->
+                            user.getOffice() == Office.HEADDELIVERY && user.getName().equalsIgnoreCase(data.getHead_responsible()))
+                    .findFirst();
+
+            matchingUser.ifPresent(user -> {
+                System.out.println("User: " + user.getName());
+                data.setHead_responsible(user.getName() + " " + user.getLast_name());
+
+                updatePersonWithCommunity(user, data);
+            });
+
+            if (!matchingUser.isPresent()) {
+                throw new IllegalArgumentException("User with HEADDELIVERY not found");
             }
         }
     }
@@ -235,7 +254,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
 
 
     public void updateAndValidateFields(TechnologyCommunity updatedData, TechnologyCommunity existingCommunity, HierarchyGroupTechnology hierarchyGroupTechnology) {
-        validateHeadResponsible(updatedData);
+        validateHeadResponsible(updatedData); //COMECAR POR AQUI
 
         if (updatedData.getName_of_community() != null) {
             existingCommunity.setName_of_community(updatedData.getName_of_community());

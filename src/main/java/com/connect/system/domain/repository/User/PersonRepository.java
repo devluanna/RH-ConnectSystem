@@ -5,7 +5,6 @@ import com.connect.system.domain.model.Account.Jobs.Office;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -29,4 +28,6 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO(p.name, p.last_name, p.office) FROM Person p WHERE p.office = :office")
     List<PersonByOfficeHeadDTO> findUserByOffice(@Param("office") Office office);
 
+    @Query("SELECT p FROM Person p WHERE p.community = :community")
+    List<Person> findByCommunity(@Param("community") String community);
 }

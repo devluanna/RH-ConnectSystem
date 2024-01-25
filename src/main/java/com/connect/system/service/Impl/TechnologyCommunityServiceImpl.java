@@ -28,16 +28,21 @@ import java.util.stream.Collectors;
 @Service
 public class TechnologyCommunityServiceImpl implements TechnologyCommunityService {
 
-    //PAREI NO BUG DO CAMPO COMMUNITY DO PERSON QUE E HEADDELIVERY -- ** FAZENDO **
 
-    // Adicionar o HEAD no Community Associates e ai depois incluir como head? -- nao fiz
+
     // Quando atualizar o head atualizar em tudo, nao e o que esta acontecendo  -- nao fiz
+    // Quando um manager entrar na comunidade o REPORT-ME dele deve ser o HEAD! -- nao fiz
 
-    //ATUALIZAR NOME DA COMUNIDADE, ATUALIZA PERSON TBM -- **FIZ**
 
-    //O MANAGER_HEAD PRECISA ENTRAR DENTRO DO GRUPO TAMBEM -- nao fiz
+    //O MANAGER_HEAD PRECISA ENTRAR DENTRO DO GRUPO TAMBEM *PENSAR* -- nao fiz
+    // Adicionar o HEAD no Community Associates e ai depois incluir como head? *PENSAR*  -- nao fiz
 
     // DELETAR ASSOCIADO DE DENTRO DA COMUNIDADE -- nao fiz
+
+    ///////////////////////////////////////
+
+    //ATUALIZAR NOME DA COMUNIDADE, ATUALIZA PERSON TBM -- **FIZ**
+    //PAREI NO BUG DO CAMPO COMMUNITY DO PERSON QUE E HEADDELIVERY -- (QUANDO ATUALIZA NAME COMMUNITY NAO ATUALIZA NO PERSON)  **FIZ**
 
     //fazer uma busca dentro do TechnologyCommunity, verificar se existe hierarchyGroupTechnology,
     // veficiar se existe communityAssociate, se existir, prosseguir e fazer
@@ -58,7 +63,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     @Override
     public TechnologyCommunity createTechCommunity(TechnologyCommunity data, HierarchyGroupTechnology hierarchyGroupTechnology, Person person) {
 
-        validateHeadResponsible(data);
+        validateAndAddHeadResponsible(data);
 
         TechnologyCommunity communityCreated = new TechnologyCommunity(
                 data.getName_of_community(),
@@ -80,8 +85,34 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         return newCommunitySaved;
     }
 
+    public void validateAndAddHeadResponsible(TechnologyCommunity data) {
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users: " + existingUsers);
 
-   @Override
+        String fieldHead = data.getHead_responsible();
+
+        if (fieldHead != null && !fieldHead.isEmpty()) {
+            Optional<PersonDTO> matchingUser = existingUsers.stream()
+                    .filter(user ->
+                            user.getOffice() == Office.HEADDELIVERY && user.getName().equalsIgnoreCase(data.getHead_responsible()))
+                    .findFirst();
+
+            matchingUser.ifPresent(user -> {
+                System.out.println("User: " + user.getName());
+                data.setHead_responsible(user.getName() + " " + user.getLast_name());
+
+                updatePersonWithCommunity(user, data);
+            });
+
+            if (!matchingUser.isPresent()) {
+                throw new IllegalArgumentException("User with HEADDELIVERY not found");
+            }
+        }
+    }
+
+
+
+    @Override
    @Transactional
     public TechnologyCommunity toUpdateCommunity(TechnologyCommunity technologyCommunity, HierarchyGroupTechnology hierarchyGroupTechnology, Integer id_community, Person person, CommunityAssociates associates) {
 
@@ -90,9 +121,9 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
 
         String communityName = existingCommunity.getName_of_community();
 
-        updateAndValidateFields(technologyCommunity, existingCommunity, hierarchyGroupTechnology);
-
         TechnologyCommunity updatedCommunity = technologyCommunityRepository.save(existingCommunity);
+
+        updateAndValidateFields(updatedCommunity, technologyCommunity);
 
         HierarchyGroupTechnology existingHierarchyGroup = hierarchyGroupRepository.findByCommunityName(communityName);
 
@@ -113,9 +144,59 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
 
         return updatedCommunity;
     }
+   public void updateAndValidateFields(TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
+       validateNewHeadResponsible(updatedCommunity, updatedCommunity);
+
+        if (technologyCommunity.getName_of_community() != null) {
+            technologyCommunity.setName_of_community(updatedCommunity.getName_of_community());
+        }
+
+        if (technologyCommunity.getHead_responsible() != null) {
+            technologyCommunity.setHead_responsible(updatedCommunity.getHead_responsible());
+        }
+    }
+    @Transactional
+    public void validateNewHeadResponsible(TechnologyCommunity data, TechnologyCommunity updatedCommunity) {
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users for update: " + existingUsers);
+
+        String fieldHead = data.getHead_responsible();
+
+        if (fieldHead != null && !fieldHead.isEmpty()) {
+            Optional<PersonDTO> matchingUser = existingUsers.stream()
+                    .filter(user ->
+                            user.getOffice() == Office.HEADDELIVERY && user.getName().equalsIgnoreCase(data.getHead_responsible()))
+                    .findFirst();
+
+                    matchingUser.ifPresent(user -> {
+                    System.out.println("User New: " + user.getName());
+                    data.setHead_responsible(user.getName() + " " + user.getLast_name());
+                    //user.setCommunity(updatedCommunity.getName_of_community());
+                    //System.out.println("NOME DA COMUNIDADE DEPOIS DE ATUALIZAR " + user.getCommunity());
+
+                //IDEIA PRA TESTAR DEU CERTOOOOOOOOOOOOO//
+                Person existingPerson = personRepository.findById(user.getId())
+                        .orElseThrow(() -> new EntityNotFoundException("Person not found"));
+
+                if (existingPerson.getCommunity() != null && !existingPerson.getCommunity().isEmpty()) {
+                    existingPerson.setCommunity(updatedCommunity.getName_of_community());
+                    System.out.println("NOME DA COMUNIDADE DEPOIS DE ATUALIZAR " + existingPerson.getCommunity());
+
+                    personRepository.save(existingPerson);
+
+                }
+            });
+
+           
+            if (!matchingUser.isPresent()) {
+                throw new IllegalArgumentException("User with new HEADDELIVERY not found");
+            }
+        }
+        
+    }
 
 
-   @Transactional
+    @Transactional
     public void updateFieldNameCommunityPerson(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
         String updatedCommunityName = updatedCommunity.getName_of_community();
         if (updatedCommunityName == null) {
@@ -147,30 +228,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         }
     }
 
-    public void updateHeadResponsible(TechnologyCommunity data) {
-        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
-        System.out.println("List of users: " + existingUsers);
 
-        String fieldHead = data.getHead_responsible();
-
-        if (fieldHead != null && !fieldHead.isEmpty()) {
-            Optional<PersonDTO> matchingUser = existingUsers.stream()
-                    .filter(user ->
-                            user.getOffice() == Office.HEADDELIVERY && user.getName().equalsIgnoreCase(data.getHead_responsible()))
-                    .findFirst();
-
-            matchingUser.ifPresent(user -> {
-                System.out.println("User: " + user.getName());
-                data.setHead_responsible(user.getName() + " " + user.getLast_name());
-
-                updatePersonWithCommunity(user, data);
-            });
-
-            if (!matchingUser.isPresent()) {
-                throw new IllegalArgumentException("User with HEADDELIVERY not found");
-            }
-        }
-    }
 
     @Override
     @Transactional
@@ -245,24 +303,14 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     }
 
 
+
+
+
     public void validateAndUpdateField(Integer communityId, CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity) {
         communityAssociates.setId_community(communityId);
         communityAssociates.setName_community(technologyCommunity.getName_of_community());
 
         communityAssociatesRepository.save(communityAssociates);
-    }
-
-
-    public void updateAndValidateFields(TechnologyCommunity updatedData, TechnologyCommunity existingCommunity, HierarchyGroupTechnology hierarchyGroupTechnology) {
-        validateHeadResponsible(updatedData); //COMECAR POR AQUI
-
-        if (updatedData.getName_of_community() != null) {
-            existingCommunity.setName_of_community(updatedData.getName_of_community());
-        }
-
-        if (updatedData.getHead_responsible() != null) {
-            existingCommunity.setHead_responsible(updatedData.getHead_responsible());
-        }
     }
 
 
@@ -290,30 +338,6 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     }
 
 
-    public void validateHeadResponsible(TechnologyCommunity data) {
-        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
-        System.out.println("List of users: " + existingUsers);
-
-        String fieldHead = data.getHead_responsible();
-
-        if (fieldHead != null && !fieldHead.isEmpty()) {
-            Optional<PersonDTO> matchingUser = existingUsers.stream()
-                    .filter(user ->
-                            user.getOffice() == Office.HEADDELIVERY && user.getName().equalsIgnoreCase(data.getHead_responsible()))
-                    .findFirst();
-
-            matchingUser.ifPresent(user -> {
-                System.out.println("User: " + user.getName());
-                data.setHead_responsible(user.getName() + " " + user.getLast_name());
-
-                updatePersonWithCommunity(user, data);
-            });
-
-            if (!matchingUser.isPresent()) {
-                throw new IllegalArgumentException("User with HEADDELIVERY not found");
-            }
-        }
-    }
 
     public void validateFieldNameCeo(HierarchyGroupTechnology group) {
         List<PersonDTO> existingUsersCEO = personRepository.findAllUsersWithPersonalDataIds();

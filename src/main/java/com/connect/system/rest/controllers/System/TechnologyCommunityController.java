@@ -4,7 +4,7 @@ import com.connect.system.domain.model.Account.EntityPerson.Person;
 import com.connect.system.domain.model.Account.Jobs.Office;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO;
 import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
-import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroupTechnology;
+import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroup;
 import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
 import com.connect.system.domain.repository.System.TechnologyCommunityRepository;
 import com.connect.system.domain.repository.User.PersonRepository;
@@ -32,22 +32,22 @@ public class TechnologyCommunityController {
 
 
     @PostMapping("/create/technology-community")
-    public ResponseEntity createTechnologyCommunity(@RequestBody TechnologyCommunity technologyCommunity, HierarchyGroupTechnology hierarchyGroupTechnology, Person person) {
+    public ResponseEntity createTechnologyCommunity(@RequestBody TechnologyCommunity technologyCommunity, Person person,  HierarchyGroup hierarchyGroup) {
 
-        TechnologyCommunity techCommunityCreated = technologyCommunityService.createTechCommunity(technologyCommunity, hierarchyGroupTechnology, person);
+        TechnologyCommunity techCommunityCreated = technologyCommunityService.createTechCommunity(technologyCommunity, person, hierarchyGroup);
 
         return ResponseEntity.ok(techCommunityCreated);
 
     }
 
     @PostMapping("/add-associate-in-community")
-    public ResponseEntity addCommunityAssociate(@RequestBody CommunityAssociates requestAssociate, @RequestParam Integer id_community, Person person, Integer id) {
+    public ResponseEntity addCommunityAssociate(@RequestBody CommunityAssociates requestAssociate, @RequestParam Integer id_community, Person person, Integer id, HierarchyGroup hierarchyGroup) {
 
         TechnologyCommunity technologyCommunity = technologyCommunityRepository.findById(id_community)
                 .orElseThrow(() -> new EntityNotFoundException("Comunidade não encontrada"));
 
 
-        CommunityAssociates associateAdded = technologyCommunityService.addCommunity(requestAssociate, technologyCommunity, person, id);
+        CommunityAssociates associateAdded = technologyCommunityService.addCommunity(requestAssociate, technologyCommunity, person, id, hierarchyGroup );
 
         return ResponseEntity.ok(associateAdded);
     }
@@ -55,9 +55,9 @@ public class TechnologyCommunityController {
 
 
     @PutMapping("/update/technology-community/{id_community}")
-    public ResponseEntity updateCommunity(@PathVariable Integer id_community, @RequestBody TechnologyCommunity technologyCommunity, HierarchyGroupTechnology hierarchyGroupTechnology, Person person, CommunityAssociates associates) {
+    public ResponseEntity updateCommunity(@PathVariable Integer id_community, @RequestBody TechnologyCommunity technologyCommunity, Person person, CommunityAssociates associates) {
 
-        TechnologyCommunity techCommunitySaved = technologyCommunityService.toUpdateCommunity(technologyCommunity, hierarchyGroupTechnology, id_community, person, associates);
+        TechnologyCommunity techCommunitySaved = technologyCommunityService.toUpdateCommunity(technologyCommunity, id_community, person, associates);
 
         return ResponseEntity.ok(techCommunitySaved);
     }

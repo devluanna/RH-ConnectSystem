@@ -18,5 +18,6 @@ public interface CommunityAssociatesRepository extends JpaRepository<CommunityAs
     @Query("SELECT h FROM CommunityAssociates h WHERE h.name_community = :name_community")
     List<CommunityAssociates> findByNameCommunity(@Param("name_community") String name_community);
 
-
+    @Query("SELECT h FROM CommunityAssociates h WHERE h.id_account = :id_account")
+    Optional<CommunityAssociates> findByAccountId(Integer id_account);
 }

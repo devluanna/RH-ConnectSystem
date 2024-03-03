@@ -1,23 +1,23 @@
 package com.connect.system.domain.model.System.TechnologyCommunity;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import lombok.Data;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
 @Data
-public class HierarchyGroupTechnology {
-    // PRESIDENTE > CEO
-    // DIRECTOR > PRESIDENTE
-    // HEAD > DIRECTOR
-    //MANAGER SENIOR RESPONDE AO GESTOR HEAD
-    //PLENO > SENIOR
-    //JUNIOR > PLENO OU DIRETO NO SENIOR
+public class GroupOfCommunity {
 
-    //Hierarquia dentro da comunidade criada
+    //GRUPO CRIADO AUTOMATICAMENTE QUANDO SE CRIA A COMUNIDADE, PARA OS GESTORES DAQUELA COMUNIDADE RECEBEREM NO REPORT-ME O CAMPO DO VALOR HEAD_RESPONSIBLE
 
 
     @Id
@@ -29,24 +29,16 @@ public class HierarchyGroupTechnology {
     @JoinColumn(name = "id_community")
     private TechnologyCommunity technologyCommunity;
 
-   private Integer community_id;
+    private Integer community_id;
 
     private String name_community;
 
-    private String type;
-
-    private String name_ceo;
-
-    private String president;
-
-    private String director;
-
-    private String manager_head;// (responsible_head da classe Community) gestor acima de outros gestores (exemplo, gestor daquela area) MUDAR DEPENDENDO DA AREA / podendo ser de mais de uma ocmunidade
+    private String head_responsible;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CommunityAssociates> communityAssociate = new ArrayList<>(); //Membros (outros gestores/coordenadores desse grupo hierarquico da comunidade X)
 
-    public void addAssociates(CommunityAssociates associates) {
+    public void addAssociateManager(CommunityAssociates associates) {
         communityAssociate.add(associates);
     }
     public void setMembers(List<CommunityAssociates> communityAssociate) {
@@ -57,3 +49,4 @@ public class HierarchyGroupTechnology {
     }
 
 }
+

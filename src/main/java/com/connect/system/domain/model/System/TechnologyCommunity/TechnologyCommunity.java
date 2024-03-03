@@ -6,8 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Optional;
-
 @Entity
 @Data
 @NoArgsConstructor
@@ -22,15 +20,10 @@ public class TechnologyCommunity {
     private TypeOfRecord type;
     private String head_responsible;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "hierarchyGroupTechnology_id")
-    private HierarchyGroupTechnology hierarchyGroupTechnology;
-
-    public TechnologyCommunity(String name_of_community, String head_responsible, HierarchyGroupTechnology hierarchyGroupTechnology) {
+    public TechnologyCommunity(String name_of_community, String head_responsible) {
         this.name_of_community = name_of_community;
         this.type = TypeOfRecord.valueOf("TECHNOLOGY");
         this.head_responsible = head_responsible;
-        this.hierarchyGroupTechnology = hierarchyGroupTechnology;
     }
 
 

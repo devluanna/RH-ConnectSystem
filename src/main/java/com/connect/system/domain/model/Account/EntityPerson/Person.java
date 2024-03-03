@@ -105,7 +105,6 @@ public class Person implements UserDetails {
     }
 
 
-
     @Override
     public boolean isEnabled() {
         return true;

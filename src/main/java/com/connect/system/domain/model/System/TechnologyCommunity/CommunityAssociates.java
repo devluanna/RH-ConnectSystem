@@ -8,12 +8,11 @@ import lombok.Data;
 @Data
 public class CommunityAssociates {
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_associate;
 
-    private Integer id_community;
+    //private Integer id_community;
     private String name_community;
 
     private Integer id_account;

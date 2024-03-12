@@ -32,9 +32,9 @@ public class TechnologyCommunityController {
 
 
     @PostMapping("/create/technology-community")
-    public ResponseEntity createTechnologyCommunity(@RequestBody TechnologyCommunity technologyCommunity, Person person,  HierarchyGroup hierarchyGroup) {
+    public ResponseEntity createTechnologyCommunity(@RequestBody TechnologyCommunity technologyCommunity, Person person,  HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy) {
 
-        TechnologyCommunity techCommunityCreated = technologyCommunityService.createTechCommunity(technologyCommunity, person, hierarchyGroup);
+        TechnologyCommunity techCommunityCreated = technologyCommunityService.createTechCommunity(technologyCommunity, person, hierarchyGroup, id_group_of_hierarchy);
 
         return ResponseEntity.ok(techCommunityCreated);
 
@@ -62,13 +62,13 @@ public class TechnologyCommunityController {
         return ResponseEntity.ok(techCommunitySaved);
     }
 
-    @GetMapping("/list-user/office-head")
+ /*   @GetMapping("/list-user/office-head")
     public List<PersonByOfficeHeadDTO> getHeadDeliveryUsers() {
 
         List<PersonByOfficeHeadDTO> headDeliveryUsers = personRepository.findUserByOffice(Office.HEADDELIVERY);
 
         return headDeliveryUsers;
-    }
+    }*/
 
 
 

@@ -53,9 +53,9 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     CommunityAssociatesRepository communityAssociatesRepository;
 
     @Override
-    public TechnologyCommunity createTechCommunity(TechnologyCommunity data, Person person, HierarchyGroup hierarchyGroup) {
+    public TechnologyCommunity createTechCommunity(TechnologyCommunity data, Person person, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy) {
 
-        validateAndAddHeadResponsible(data, hierarchyGroup);
+        validateAndAddHeadResponsible(data, hierarchyGroup, id_group_of_hierarchy);
 
         TechnologyCommunity communityCreated = new TechnologyCommunity(
                 data.getName_of_community(),
@@ -76,7 +76,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     }
 
 
-    public void validateAndAddHeadResponsible(TechnologyCommunity data, HierarchyGroup hierarchyGroup) {
+    public void validateAndAddHeadResponsible(TechnologyCommunity data, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy) {
         List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
         System.out.println("List of users: " + existingUsers);
 
@@ -96,6 +96,12 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
 
                 updatePersonWithCommunity(user, data);
                 validateFieldInHierarchyGroup(data, idAccount);
+
+               /* if(matchingUser.isPresent()) {
+                    System.out.println("Usuario existe");
+                    updatePersonFieldReport(user, data, idAccount, hierarchyGroup, id_group_of_hierarchy);
+                }
+*/
             });
 
 
@@ -104,6 +110,23 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
             }
         }
     }
+
+    private String getDirectorFromCommunityAssociates(List<CommunityAssociates> communityAssociates, Integer idAccount) {
+        for (CommunityAssociates associate : communityAssociates) {
+            if (associate.getId_account().equals(idAccount) && associate.getId_group() != null) {
+                System.out.println("ID DO USUARIO" + idAccount + "EH IGUAL AO ID DO ASSOCIATE COMMUNITY" + associate.getId_account()
+                        + "E TEM UM GRUPO DE HIERARQUIA EXISTENTE" + associate.getId_group());
+
+                Optional<HierarchyGroup> hierarchyGroupOptional = hierarchyGroupRepository.findById(associate.getId_group());
+                if (hierarchyGroupOptional.isPresent()) {
+                    HierarchyGroup hierarchyGroup = hierarchyGroupOptional.get();
+                    return hierarchyGroup.getDirector();
+                }
+            }
+        }
+        return null; // Se não encontrar um diretor correspondente
+    }
+
 
     public void validateFieldInHierarchyGroup(TechnologyCommunity data, Integer idAccount) {
         Optional<CommunityAssociates> existingAssociate = communityAssociatesRepository.findByAccountId(idAccount);
@@ -121,27 +144,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     //SE EXISTIR, VERIFICAR SE EXISTE UM USUARIO COM OFFICE HEADDELIVERY
     // SE EXISTIR, COLOCAR O REPORT ME
 
-    /*private void updatePersonFieldReport(Person user, TechnologyCommunity newCommunitySaved, TechnologyCommunity data, HierarchyGroup hierarchyGroup) {
 
-        if (user != null && user.getId() != null) {
-            Person existingPerson = personRepository.findById(user.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Person not found"));
-
-            if (existingPerson.getOffice() == Office.HEADDELIVERY) {
-                // Verificar se o DIRECTOR está definido no HierarchyGroupTechnology
-                if (hierarchyGroup.getDirector() != null && !hierarchyGroup.getDirector().isEmpty()) {
-                    existingPerson.setReport_me(hierarchyGroup.getDirector());
-                    System.out.println("O HEADDELIVERY REPORTA-SE Ao DIRECTOR: " + existingPerson.getReport_me());
-                } else {
-                    throw new IllegalArgumentException("DIRECTOR não está definido no HierarchyGroupTechnology");
-                }
-            }
-
-            personRepository.save(existingPerson);
-        } else {
-            throw new IllegalArgumentException("ID do usuário é nulo");
-        }
-    }*/
 
     @Override
     @Transactional
@@ -270,7 +273,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         //HierarchyGroupTechnology hierarchyGroupTechnology = existingCommunity.getHierarchyGroupTechnology();
 
         CommunityAssociates newCommunityAssociate = toCheckAssociate(communityAssociates,technologyCommunity);
-        
+
        // hierarchyGroupTechnology.addAssociates(newCommunityAssociate);
         validateAndUpdateField(communityId, communityAssociates, technologyCommunity);
 
@@ -283,7 +286,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     //Preencher o campo COMMUNITY da classe ASSOCIATE.HIERARCHYGROUP.COMMUNITY
 
 
-    
+
     @Transactional
     public CommunityAssociates toCheckAssociate(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity) {
 

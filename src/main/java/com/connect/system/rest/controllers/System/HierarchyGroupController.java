@@ -22,18 +22,18 @@ public class HierarchyGroupController {
     HierarchyGroupRepository hierarchyGroupRepository;
 
     @PostMapping("/create/group-hierarchy")
-    public ResponseEntity createGroupHierarchy(@RequestBody HierarchyGroup hierarchyGroup) {
+    public ResponseEntity createGroupHierarchy(@RequestBody HierarchyGroup hierarchyGroup, Person person ) {
 
-        HierarchyGroup GroupCreated = hierarchyGroupService.createGroupHierarchy(hierarchyGroup);
+        HierarchyGroup GroupCreated = hierarchyGroupService.createGroupHierarchy(hierarchyGroup, person);
 
         return ResponseEntity.ok(GroupCreated);
 
     }
 
     @PutMapping("/update/group/{id_group_of_hierarchy}")
-    public ResponseEntity updateCommunity(@PathVariable Integer id_group_of_hierarchy, @RequestBody HierarchyGroup group) {
+    public ResponseEntity updateCommunity(@PathVariable Integer id_group_of_hierarchy, @RequestBody HierarchyGroup group, CommunityAssociates communityAssociates) {
 
-        HierarchyGroup groupExistingSaved = hierarchyGroupService.toUpdateGroup(group, id_group_of_hierarchy);
+        HierarchyGroup groupExistingSaved = hierarchyGroupService.toUpdateGroup(group, id_group_of_hierarchy, communityAssociates);
 
         return ResponseEntity.ok(groupExistingSaved);
     }

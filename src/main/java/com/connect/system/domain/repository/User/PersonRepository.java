@@ -25,9 +25,13 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     @Query("SELECT p FROM Person p WHERE p.email = :email")
     Person findByEmail(@Param("email") String email);
 
-    @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO(p.name, p.last_name, p.office) FROM Person p WHERE p.office = :office")
-    List<PersonByOfficeHeadDTO> findUserByOffice(@Param("office") Office office);
+   // @Query("SELECT NEW com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO(p.name, p.last_name, p.office) FROM Person p WHERE p.office = :office")
+   // List<PersonByOfficeHeadDTO> findUserByOffice(@Param("office") Office office);
 
     @Query("SELECT p FROM Person p WHERE p.community = :community")
     List<Person> findByCommunity(@Param("community") String community);
+
+    @Query("SELECT p FROM Person p WHERE p.office = :office")
+    Person findByOffice(@Param("office") Office office);
+
 }

@@ -8,9 +8,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface HierarchyGroupService {
-    HierarchyGroup createGroupHierarchy(HierarchyGroup hierarchyGroup);
+    HierarchyGroup createGroupHierarchy(HierarchyGroup hierarchyGroup, Person person);
 
-    HierarchyGroup toUpdateGroup(HierarchyGroup group, Integer id_group_of_hierarchy);
+    HierarchyGroup toUpdateGroup(HierarchyGroup group, Integer id_group_of_hierarchy, CommunityAssociates communityAssociates);
 
     CommunityAssociates addGroup(CommunityAssociates communityAssociates, HierarchyGroup groupHierarchy, Person person, Integer id);
 }

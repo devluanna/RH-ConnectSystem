@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 public interface TechnologyCommunityService {
-    TechnologyCommunity createTechCommunity(TechnologyCommunity data, Person person, HierarchyGroup hierarchyGroup);
+    TechnologyCommunity createTechCommunity(TechnologyCommunity data, Person person, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy);
 
     TechnologyCommunity toUpdateCommunity(TechnologyCommunity technologyCommunity, Integer id_community, Person person, CommunityAssociates associates);
 

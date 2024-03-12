@@ -1,6 +1,7 @@
 package com.connect.system.domain.model.System.TechnologyCommunity;
 
 import com.connect.system.domain.model.Account.Jobs.TypeOfRecord;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,12 +41,18 @@ public class HierarchyGroup {
 
     private String hr_director;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CommunityAssociates> communityAssociate = new ArrayList<>(); //Membros (outros HEADS desse grupo hierarquico)
 
-    public HierarchyGroup(String name_of_group, TypeOfRecord type_of_group){
+
+    public HierarchyGroup(String name_of_group, TypeOfRecord type_of_group, String director, String hr_director, String president, String name_ceo){
         this.name_of_group = name_of_group;
         this.type_of_group = type_of_group;
+        this.director = director;
+        this.hr_director = hr_director;
+        this.president = president;
+        this.name_ceo = name_ceo;
     }
 
 

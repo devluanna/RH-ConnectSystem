@@ -8,16 +8,18 @@ import lombok.Data;
 @Data
 public class CommunityAssociates {
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "id_group_of_community")
-    @JsonIgnore
     private GroupOfCommunity group;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_associate;
 
-    //private Integer id_community;
+    private Integer id_group_community;
+
+    private Integer id_community;
     private String name_community;
 
     private Integer id_account;

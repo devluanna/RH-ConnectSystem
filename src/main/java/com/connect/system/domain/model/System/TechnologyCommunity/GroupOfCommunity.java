@@ -1,5 +1,6 @@
 package com.connect.system.domain.model.System.TechnologyCommunity;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -37,6 +38,7 @@ public class GroupOfCommunity {
 
     private String head_responsible;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private static List<CommunityAssociates> communityAssociate = new ArrayList<>();
     //Criar outro LIST pra comunidade!

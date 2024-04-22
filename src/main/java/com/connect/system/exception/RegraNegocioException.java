@@ -13,4 +13,5 @@ public class RegraNegocioException extends RuntimeException {
     public HttpStatus getHttpStatus() {
         return httpStatus;
     }
+
 }

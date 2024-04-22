@@ -1,6 +1,7 @@
 package com.connect.system.domain.repository.User;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
+import com.connect.system.domain.model.Account.EntityPerson.Status;
 import com.connect.system.domain.model.Account.Jobs.Office;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
@@ -31,7 +32,7 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     @Query("SELECT p FROM Person p WHERE p.community = :community")
     List<Person> findByCommunity(@Param("community") String community);
 
-    @Query("SELECT p FROM Person p WHERE p.office = :office")
-    Person findByOffice(@Param("office") Office office);
+    @Query("SELECT p FROM Person p WHERE p.office = :office AND p.status = :status")
+    Person findByOffice(@Param("office") Office office, @Param("status") Status status);
 
 }

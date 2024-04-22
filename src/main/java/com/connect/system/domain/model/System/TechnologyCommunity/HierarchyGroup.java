@@ -1,7 +1,6 @@
 package com.connect.system.domain.model.System.TechnologyCommunity;
 
 import com.connect.system.domain.model.Account.Jobs.TypeOfRecord;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -22,8 +21,6 @@ public class HierarchyGroup {
     //PLENO > SENIOR
     //JUNIOR > PLENO OU DIRETO NO SENIOR
 
-    //TODO USUARIO COM OFFICE HEADDELIVERY JA VAI ENTRAR NESSE GROUP AUTOMATICAMENTE PARA RECEBER O REPORT ME DO VALOR DIRECTOR//
-    //FAZER LOGICA PRA CADA UM IR RECEBENDO O VALOR DE REPORT-ME DO CARGO ACIMA DO DELE//
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,7 +40,7 @@ public class HierarchyGroup {
 
 
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<CommunityAssociates> communityAssociate = new ArrayList<>(); //Membros (outros HEADS desse grupo hierarquico)
+    private List<ListAssociatesHierarchy> communityAssociate = new ArrayList<>(); //Membros (outros HEADS desse grupo hierarquico)
 
 
     public HierarchyGroup(String name_of_group, TypeOfRecord type_of_group, String director, String hr_director, String president, String name_ceo){
@@ -56,13 +53,13 @@ public class HierarchyGroup {
     }
 
 
-    public void addAssociates(CommunityAssociates associates) {
+    public void addAssociates(ListAssociatesHierarchy associates) {
         communityAssociate.add(associates);
     }
-    public void setMembers(List<CommunityAssociates> communityAssociate) {
+    public void setMembers(List<ListAssociatesHierarchy> communityAssociate) {
         this.communityAssociate = communityAssociate;
     }
-    public List<CommunityAssociates> getCommunityAssociate() {
+    public List<ListAssociatesHierarchy> getCommunityAssociate() {
         return communityAssociate;
     }
 

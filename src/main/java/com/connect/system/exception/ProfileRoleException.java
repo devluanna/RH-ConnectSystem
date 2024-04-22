@@ -14,6 +14,7 @@ public class ProfileRoleException extends JsonDeserializer<ProfileRole> {
     @Override
     public ProfileRole deserialize(JsonParser jsonParser, DeserializationContext deserializationContext) throws IOException {
         JsonNode node = jsonParser.getCodec().readTree(jsonParser);
+
         try {
             return ProfileRole.valueOf(node.asText());
         } catch (IllegalArgumentException e) {

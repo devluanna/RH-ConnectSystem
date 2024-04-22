@@ -6,16 +6,18 @@ import lombok.Data;
 
 @Entity
 @Data
-public class CommunityAssociates {
+public class ListAssociatesHierarchy {
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "id_group_of_community")
+    @JoinColumn(name = "id_group_of_hierarchy")
     @JsonIgnore
-    private GroupOfCommunity group;
+    private HierarchyGroup group;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id_associate;
+
+    private Integer id_group;
 
     //private Integer id_community;
     private String name_community;
@@ -25,5 +27,7 @@ public class CommunityAssociates {
     private String name_associate;
     private String office;
     private String seniority;
+
+
 
 }

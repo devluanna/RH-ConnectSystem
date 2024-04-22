@@ -1,11 +1,7 @@
 package com.connect.system.rest.controllers.System;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
-import com.connect.system.domain.model.Account.Jobs.Office;
-import com.connect.system.domain.model.Account.ResponseDTO.PersonByOfficeHeadDTO;
-import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
-import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroup;
-import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
+import com.connect.system.domain.model.System.TechnologyCommunity.*;
 import com.connect.system.domain.repository.System.TechnologyCommunityRepository;
 import com.connect.system.domain.repository.User.PersonRepository;
 import com.connect.system.service.TechnologyCommunityService;
@@ -13,8 +9,6 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -32,22 +26,22 @@ public class TechnologyCommunityController {
 
 
     @PostMapping("/create/technology-community")
-    public ResponseEntity createTechnologyCommunity(@RequestBody TechnologyCommunity technologyCommunity, Person person,  HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy) {
+    public ResponseEntity createTechnologyCommunity(@RequestBody TechnologyCommunity technologyCommunity, Person person, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy, GroupOfCommunity groupOfCommunity) {
 
-        TechnologyCommunity techCommunityCreated = technologyCommunityService.createTechCommunity(technologyCommunity, person, hierarchyGroup, id_group_of_hierarchy);
+        TechnologyCommunity techCommunityCreated = technologyCommunityService.createTechCommunity(technologyCommunity, person, hierarchyGroup, id_group_of_hierarchy, groupOfCommunity);
 
         return ResponseEntity.ok(techCommunityCreated);
 
     }
 
     @PostMapping("/add-associate-in-community")
-    public ResponseEntity addCommunityAssociate(@RequestBody CommunityAssociates requestAssociate, @RequestParam Integer id_community, Person person, Integer id, HierarchyGroup hierarchyGroup) {
+    public ResponseEntity addCommunityAssociate(@RequestBody CommunityAssociates requestAssociate, @RequestParam Integer id_community, Person person, Integer id, GroupOfCommunity groupOfCommunity) {
 
         TechnologyCommunity technologyCommunity = technologyCommunityRepository.findById(id_community)
                 .orElseThrow(() -> new EntityNotFoundException("Comunidade não encontrada"));
 
 
-        CommunityAssociates associateAdded = technologyCommunityService.addCommunity(requestAssociate, technologyCommunity, person, id, hierarchyGroup );
+        CommunityAssociates associateAdded = technologyCommunityService.addCommunity(requestAssociate, technologyCommunity, person, id, groupOfCommunity );
 
         return ResponseEntity.ok(associateAdded);
     }

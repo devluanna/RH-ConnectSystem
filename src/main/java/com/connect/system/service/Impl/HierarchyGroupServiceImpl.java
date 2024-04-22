@@ -4,10 +4,9 @@ import com.connect.system.domain.model.Account.EntityPerson.Person;
 import com.connect.system.domain.model.Account.EntityPerson.Status;
 import com.connect.system.domain.model.Account.Jobs.Office;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
-import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
+import com.connect.system.domain.model.System.TechnologyCommunity.ListAssociatesHierarchy;
 import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroup;
-import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
-import com.connect.system.domain.repository.System.CommunityAssociatesRepository;
+import com.connect.system.domain.repository.System.ListAssociatesHierarchyRepository;
 import com.connect.system.domain.repository.System.HierarchyGroupRepository;
 import com.connect.system.domain.repository.User.PersonRepository;
 import com.connect.system.service.HierarchyGroupService;
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class HierarchyGroupServiceImpl implements HierarchyGroupService {
 
-
+// [OK!] TODOS CASOS DE USOS FORAM FEITOS E TESTADOS!!!!!!!!!!!
 
     // Atualizar os campos de DIRECTOR, PRESIDENT, CEO
     // Ao atualizar os campos de PRESIDENT E CEO, atualizar o report me do DIRECTOR e PRESIDENT *Achei um jeito legal para reutilizar os metodos
@@ -49,7 +48,7 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
     HierarchyGroupRepository hierarchyGroupRepository;
 
     @Autowired
-    CommunityAssociatesRepository communityAssociatesRepository;
+    ListAssociatesHierarchyRepository listAssociatesHierarchyRepository;
 
     @Autowired
     PersonRepository personRepository;
@@ -82,14 +81,14 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
 
     @Override
     @Transactional
-    public HierarchyGroup toUpdateGroup(HierarchyGroup group, Integer id_group_of_hierarchy, CommunityAssociates communityAssociates) {
+    public HierarchyGroup toUpdateGroup(HierarchyGroup group, Integer id_group_of_hierarchy, ListAssociatesHierarchy listAssociatesHierarchy) {
 
         HierarchyGroup existingGroup = hierarchyGroupRepository.findById(id_group_of_hierarchy)
                 .orElseThrow(() -> new EntityNotFoundException("HierarchyGroup not found with id: " + id_group_of_hierarchy));
 
         HierarchyGroup updatedGroup = hierarchyGroupRepository.save(existingGroup);
 
-        updateAndValidateFields(updatedGroup, group);
+        updateNewFields(updatedGroup, group);
 
         updateReportOfHeadDeliveryUsers(updatedGroup, group);
 
@@ -100,11 +99,16 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
 
 
 
-    public void updateAndValidateFields(HierarchyGroup updatedGroup, HierarchyGroup group ) {
+    public void updateNewFields(HierarchyGroup updatedGroup, HierarchyGroup group ) {
         validateNewDirector(group, updatedGroup);
+        validateNewDirectorHr(group, updatedGroup);
 
         if(group.getDirector() != null) {
             updatedGroup.setDirector(group.getDirector());
+        }
+
+        if(group.getHr_director() != null){
+        updatedGroup.setHr_director(group.getHr_director());
         }
 
         if (group.getName_of_group() != null) {
@@ -124,11 +128,11 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
             Optional<PersonDTO> matchingUser = existingUsers.stream()
                     .filter(user ->
                             user.getOffice() == Office.DIRECTOR && user.getName().equalsIgnoreCase(group.getDirector()))
-                    .findFirst();
+                    .findAny();
 
             matchingUser.ifPresent(user -> {
                 System.out.println("User New: " + user.getName());
-                group.setDirector(user.getName() + " " + user.getLast_name());
+                updatedGroup.setDirector(user.getName() + " " + user.getLast_name());
 
 
             });
@@ -140,11 +144,38 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
 
     }
 
+    @Transactional
+    public void validateNewDirectorHr(HierarchyGroup group, HierarchyGroup updatedGroup) {
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users for update: " + existingUsers);
+
+        String fieldNewDirectorHr = group.getHr_director();
+
+        if (fieldNewDirectorHr != null && !fieldNewDirectorHr.isEmpty()) {
+            Optional<PersonDTO> matchingUser = existingUsers.stream()
+                    .filter(user ->
+                            user.getOffice() == Office.DIRECTORHR && user.getName().equalsIgnoreCase(group.getHr_director()))
+                    .findAny();
+
+            matchingUser.ifPresent(user -> {
+                System.out.println("User New: " + user.getName());
+                updatedGroup.setHr_director(user.getName() + " " + user.getLast_name());
+
+
+            });
+
+            if (!matchingUser.isPresent()) {
+                throw new IllegalArgumentException("User with new DIRECTORHR not found");
+            }
+        }
+
+    }
+
     //Metodo responsavel por: Quando o DIRECTOR for atualizado, atualizar o REPORT ME tambem do HEAD.
     @Transactional
     private void updateReportOfHeadDeliveryUsers(HierarchyGroup updatedGroup, HierarchyGroup group) {
 
-        List<CommunityAssociates> matchingAssociates = communityAssociatesRepository.findByGroupId(updatedGroup.getId_group_of_hierarchy());
+        List<ListAssociatesHierarchy> matchingAssociates = listAssociatesHierarchyRepository.findByGroupId(updatedGroup.getId_group_of_hierarchy());
 
 
         if (!matchingAssociates.isEmpty()) {
@@ -164,14 +195,14 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
 
 
     @Override
-    public CommunityAssociates addGroup(CommunityAssociates communityAssociates, HierarchyGroup groupHierarchy, Person person, Integer id) {
+    public ListAssociatesHierarchy addGroup(ListAssociatesHierarchy listAssociatesHierarchy, HierarchyGroup groupHierarchy, Person person, Integer id) {
         Integer groupId = groupHierarchy.getId_group_of_hierarchy();
 
         HierarchyGroup existingGroup = hierarchyGroupRepository.findById(groupId)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
 
 
-        CommunityAssociates newCommunityAssociate = toCheckAssociateHeadDelivery(communityAssociates, groupHierarchy, groupId, person);
+        ListAssociatesHierarchy newCommunityAssociate = toCheckAssociateHeadDelivery(listAssociatesHierarchy, groupHierarchy, groupId, person);
 
         groupHierarchy.addAssociates(newCommunityAssociate);
 
@@ -182,48 +213,48 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
 
     //Metodo responsavel por validar cada usuario antes de adicionar ao grupo
     @Transactional
-    public CommunityAssociates toCheckAssociateHeadDelivery(CommunityAssociates communityAssociates, HierarchyGroup groupHierarchy, Integer groupId, Person person) {
+    public ListAssociatesHierarchy toCheckAssociateHeadDelivery(ListAssociatesHierarchy listAssociatesHierarchy, HierarchyGroup groupHierarchy, Integer groupId, Person person) {
 
         List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
         System.out.println("List of users with office HEADDELIVERY: " + existingUsers);
 
-        String fieldNameAssociate = communityAssociates.getName_associate();
+        String fieldNameAssociate = listAssociatesHierarchy.getName_associate();
 
         if (fieldNameAssociate != null && !fieldNameAssociate.isEmpty()) {
-            List<CommunityAssociates> matchingAssociate = existingUsers.stream()
+            List<ListAssociatesHierarchy> matchingAssociate = existingUsers.stream()
                     .filter(user -> user.getOffice() == Office.HEADDELIVERY)
                     .map(user -> {
-                        communityAssociates.setId_group(groupId);
-                        communityAssociates.setId_account(user.getId());
-                        communityAssociates.setName_associate(user.getName() + " " + user.getLast_name());
-                        communityAssociates.setIdentity(user.getIdentityPerson());
-                        communityAssociates.setOffice(String.valueOf(user.getOffice()));
-                        communityAssociates.setSeniority(String.valueOf(user.getSeniority()));
+                        listAssociatesHierarchy.setId_group(groupId);
+                        listAssociatesHierarchy.setId_account(user.getId());
+                        listAssociatesHierarchy.setName_associate(user.getName() + " " + user.getLast_name());
+                        listAssociatesHierarchy.setIdentity(user.getIdentityPerson());
+                        listAssociatesHierarchy.setOffice(String.valueOf(user.getOffice()));
+                        listAssociatesHierarchy.setSeniority(String.valueOf(user.getSeniority()));
 
                         Integer idAccount = user.getId();
 
                         updateReportFieldOfHead(groupHierarchy, idAccount, person);
 
                         if (user.getCommunity() != null && !user.getCommunity().isEmpty()) {
-                                communityAssociates.setName_community(user.getCommunity());
+                                listAssociatesHierarchy.setName_community(user.getCommunity());
                             }
 
-                        communityAssociates.setGroup(groupHierarchy);
+                        listAssociatesHierarchy.setGroup(groupHierarchy);
 
-                        return communityAssociates;
+                        return listAssociatesHierarchy;
 
 
                     })
                     .collect(Collectors.toList());
 
             if (!matchingAssociate.isEmpty()) {
-                communityAssociatesRepository.saveAll(matchingAssociate);
+                listAssociatesHierarchyRepository.saveAll(matchingAssociate);
             } else {
                 throw new IllegalArgumentException("User HEADDELIVERY not found");
             }
         }
 
-        return communityAssociates;
+        return listAssociatesHierarchy;
     }
 
 
@@ -260,7 +291,7 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
             Optional<PersonDTO> matchingUser = existingUsers.stream()
                     .filter(user ->
                             user.getOffice() == Office.DIRECTOR && user.getName().equalsIgnoreCase(group.getDirector()))
-                    .findFirst();
+                    .findAny();
 
             matchingUser.ifPresent(user -> {
                 System.out.println("User: " + user.getName());
@@ -283,7 +314,7 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
             Optional<PersonDTO> matchingUser = existingUsers.stream()
                     .filter(user ->
                             user.getOffice() == Office.DIRECTORHR && user.getName().equalsIgnoreCase(group.getHr_director()))
-                    .findFirst();
+                    .findAny();
 
             matchingUser.ifPresent(user -> {
                 System.out.println("User: " + user.getName());
@@ -344,92 +375,84 @@ public class HierarchyGroupServiceImpl implements HierarchyGroupService {
     }
 
 
-    // Metodos para verificar e ATUALIZAR o campo REPORT-ME da instancia Person de cada USER de Cargo DIRECTOR pra cima!
+    // Metodos para verificar e ATUALIZAR o campo REPORT-ME da instancia Person de cada USER de Cargo DIRECTOR pra cima! [ASSIM FUNCIONOU!]
     @Transactional
     public void validateAndUpdateFieldsReports(HierarchyGroup newGroupSaved, HierarchyGroup updateGroup, OperationType operationType) {
-        //validateAndUpdateFieldReportMeDirector(newGroupSaved);
-       // validateAndUpdateFieldReportMePresident(newGroupSaved);
-        validateAndUpdateFieldReportMeDirectorHR(newGroupSaved, updateGroup, operationType);
-    }
+        if(operationType == OperationType.CREATE) {
+            AddFieldReportMeDirector(newGroupSaved);
+            AddFieldReportMeDirectorHR(newGroupSaved);
+        }
 
-
-    @Transactional
-    public void validateAndUpdateFieldReportMePresident(HierarchyGroup newGroupSaved) {
-        String nameCeo = newGroupSaved.getName_ceo();
-
-        Person president = personRepository.findByOffice(Office.PRESIDENT);
-
-        if (president != null) {
-            president.setReport_me(nameCeo);
-            personRepository.save(president);
-
-        } else {
-            System.out.println("Unable to save the REPORT ME field in USER PRESIDENT");
+        if(operationType == OperationType.UPDATE) {
+            UpdateFieldReportMeDirectorHR(updateGroup);
+            UpdateFieldReportMeDirector(updateGroup);
         }
 
     }
 
-    @Transactional
-    public void validateAndUpdateFieldReportMeDirector(HierarchyGroup newGroupSaved) {
-        String presidentName = newGroupSaved.getPresident();
 
-        Person director = personRepository.findByOffice(Office.DIRECTOR);
+    @Transactional
+    public void AddFieldReportMeDirector(HierarchyGroup newGroupSaved) {
+        String nameNewPresident = newGroupSaved.getPresident();
+
+        Person director = personRepository.findByOffice(Office.DIRECTOR, Status.AVAILABLE);
 
         if (director != null) {
-            director.setReport_me(presidentName);
-            personRepository.save(director);
-
-        } else {
-            System.out.println("Unable to save the REPORT ME field in USER DIRECTOR");
-        }
-
-    }
-
-    //TESTEEEE FUNCIONOU!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    @Transactional
-    public void validateAndUpdateFieldReportMeDirectorHR(HierarchyGroup newGroupSaved, HierarchyGroup updateGroup, OperationType operationType) {
-        String nameDirector = newGroupSaved.getDirector();
-        String nameNewDirector = updateGroup.getDirector();
-
-        Person directorHr = personRepository.findByOffice(Office.DIRECTORHR);
-
-        if (directorHr != null) {
-            if (operationType == OperationType.CREATE && directorHr.getReport_me() == null) {
-                directorHr.setReport_me(nameDirector);
-                personRepository.save(directorHr);
-            } else if (operationType == OperationType.UPDATE && directorHr.getReport_me() != null) {
-                directorHr.setReport_me(nameNewDirector);
-                personRepository.save(directorHr);
+                director.setReport_me(nameNewPresident);
+                personRepository.save(director);
+                System.out.println("REPORT DIRECTOR ATUALIZADO COM SUCESSO!");
             } else {
                 System.out.println("Unable to save the REPORT ME field in USER DIRECTOR HR");
             }
-        }
+
     }
 
-    //TESTEEEE FUNCIONOU!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    // Metodos para ATUALIZAR o campo REPORT-ME da instancia Person de cada USER quando se atualizar os CAMPO no Grupo de Hierarquia!
     @Transactional
-    public void validateAndUpdateNewFieldsReports(HierarchyGroup updatedGroup) {
-        validateAndUpdateFieldNewReportMeDirectorHR(updatedGroup);
-    }
+    public void AddFieldReportMeDirectorHR(HierarchyGroup newGroupSaved) {
+        String nameNewDirector = newGroupSaved.getDirector();
 
-
-    @Transactional
-    public void validateAndUpdateFieldNewReportMeDirectorHR(HierarchyGroup updatedGroup) {
-        String nameDirector = updatedGroup.getDirector();
-
-        Person directorHr = personRepository.findByOffice(Office.DIRECTORHR);
+        Person directorHr = personRepository.findByOffice(Office.DIRECTORHR, Status.AVAILABLE);
 
         if (directorHr != null) {
-            directorHr.setReport_me(nameDirector);
+            directorHr.setReport_me(nameNewDirector);
             personRepository.save(directorHr);
 
+            System.out.println("REPORT DO DIRECTORHR ADICIONADO COM SUCESSO!");
         } else {
             System.out.println("Unable to save the REPORT ME field in USER DIRECTOR HR");
         }
+    }
 
+    @Transactional
+    public void UpdateFieldReportMeDirector(HierarchyGroup updateGroup) {
+        String namePresident = updateGroup.getPresident();
+
+        Person director = personRepository.findByOffice(Office.DIRECTOR, Status.AVAILABLE);
+
+        if (director != null) {
+            director.setReport_me(namePresident);
+            personRepository.save(director);
+            System.out.println("REPORT DO DIRECTOR ATUALIZADO COM SUCESSO!");
+        } else {
+            System.out.println("Unable to save the REPORT ME field in USER DIRECTOR HR");
+
+        }
+    }
+
+    @Transactional
+    public void UpdateFieldReportMeDirectorHR(HierarchyGroup updateGroup) {
+        String nameDirector = updateGroup.getDirector();
+
+        Person directorHr = personRepository.findByOffice(Office.DIRECTORHR, Status.AVAILABLE);
+
+        if (directorHr != null) {
+                    directorHr.setReport_me(nameDirector);
+                    personRepository.save(directorHr);
+                    System.out.println("REPORT DO DIRECTORHR ATUALIZADO COM SUCESSO!");
+                } else {
+                    System.out.println("Unable to save the REPORT ME field in USER DIRECTOR HR");
+
+        }
     }
 
 

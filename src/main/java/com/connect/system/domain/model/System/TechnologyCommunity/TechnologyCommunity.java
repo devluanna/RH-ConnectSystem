@@ -20,10 +20,15 @@ public class TechnologyCommunity {
     private TypeOfRecord type;
     private String head_responsible;
 
-    public TechnologyCommunity(String name_of_community, String head_responsible) {
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "group_community_id")
+    private GroupOfCommunity group_of_community;
+
+    public TechnologyCommunity(String name_of_community, String head_responsible, GroupOfCommunity group_of_community) {
         this.name_of_community = name_of_community;
         this.type = TypeOfRecord.valueOf("TECHNOLOGY");
         this.head_responsible = head_responsible;
+        this.group_of_community = group_of_community;
     }
 
 

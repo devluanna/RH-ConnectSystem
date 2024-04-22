@@ -1,9 +1,8 @@
 package com.connect.system.rest.controllers.System;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
-import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
+import com.connect.system.domain.model.System.TechnologyCommunity.ListAssociatesHierarchy;
 import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroup;
-import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
 import com.connect.system.domain.repository.System.HierarchyGroupRepository;
 import com.connect.system.service.HierarchyGroupService;
 import jakarta.persistence.EntityNotFoundException;
@@ -31,9 +30,9 @@ public class HierarchyGroupController {
     }
 
     @PutMapping("/update/group/{id_group_of_hierarchy}")
-    public ResponseEntity updateCommunity(@PathVariable Integer id_group_of_hierarchy, @RequestBody HierarchyGroup group, CommunityAssociates communityAssociates) {
+    public ResponseEntity updateCommunity(@PathVariable Integer id_group_of_hierarchy, @RequestBody HierarchyGroup group, ListAssociatesHierarchy listAssociatesHierarchy) {
 
-        HierarchyGroup groupExistingSaved = hierarchyGroupService.toUpdateGroup(group, id_group_of_hierarchy, communityAssociates);
+        HierarchyGroup groupExistingSaved = hierarchyGroupService.toUpdateGroup(group, id_group_of_hierarchy, listAssociatesHierarchy);
 
         return ResponseEntity.ok(groupExistingSaved);
     }
@@ -41,13 +40,13 @@ public class HierarchyGroupController {
 
 
    @PostMapping("/add-associate-in-group")
-    public ResponseEntity addAssociateInGroup(@RequestBody CommunityAssociates communityAssociates, @RequestParam Integer id_group_of_hierarchy, Person person, Integer id) {
+    public ResponseEntity addAssociateInGroup(@RequestBody ListAssociatesHierarchy listAssociatesHierarchy, @RequestParam Integer id_group_of_hierarchy, Person person, Integer id) {
 
        HierarchyGroup groupHierarchy = hierarchyGroupRepository.findById(id_group_of_hierarchy)
                 .orElseThrow(() -> new EntityNotFoundException("Group not found"));
 
 
-        CommunityAssociates associateAdded = hierarchyGroupService.addGroup(communityAssociates, groupHierarchy, person, id);
+        ListAssociatesHierarchy associateAdded = hierarchyGroupService.addGroup(listAssociatesHierarchy, groupHierarchy, person, id);
 
         return ResponseEntity.ok(associateAdded);
     }

@@ -2,14 +2,9 @@ package com.connect.system.service.Impl;
 
 import com.connect.system.domain.model.Account.EntityPerson.Person;
 import com.connect.system.domain.model.Account.Jobs.Office;
-import com.connect.system.domain.model.Account.Jobs.TypeOfRecord;
 import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
-import com.connect.system.domain.model.System.TechnologyCommunity.CommunityAssociates;
-import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroup;
-import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
-import com.connect.system.domain.repository.System.CommunityAssociatesRepository;
-import com.connect.system.domain.repository.System.HierarchyGroupRepository;
-import com.connect.system.domain.repository.System.TechnologyCommunityRepository;
+import com.connect.system.domain.model.System.TechnologyCommunity.*;
+import com.connect.system.domain.repository.System.*;
 import com.connect.system.domain.repository.User.PersonRepository;
 import com.connect.system.service.TechnologyCommunityService;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,6 +19,28 @@ import java.util.stream.Collectors;
 @Service
 public class TechnologyCommunityServiceImpl implements TechnologyCommunityService {
 
+    // Criar comunidade > automaticamente criar grupo > campos do grupo da comunidade precisam herdar os campos da comunidade!
+
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    //BUG: SE EXISTIR 2 HEADS ELE NAO ATUALIZA!
+    // PROBLEMA REAL:  "trace": "org.springframework.dao.IncorrectResultSizeDataAccessException: query did not return a unique result: 2\r\n
+    // validateFieldInHierarchyGroup
+
+
+    //  "head_responsible": null | NAO ATUALIZA SE NAO PASSAR UM VALOR, FICA NULL!
+
+    // Quando o HEAD for atualizado, ou seja MARIANA saiu e agora a HEAD e a JULIA, ou houver uma troca, enfim.
+    // No Community Associates: o campo comunidade de MARIANA precisa voltar a ser NULL, resolver!
+
+    //Quando coloco atualizo a HEAD o nome da comunidade nao vai para Person da nova Head
+
+    //1 TESTE -> Atualizei 3x HEAD, 2 nao estava no grupo de hierarquia e nao tinha MANAGER abaixo delas na comunidade.
+    //2 TESTE -> Coloquei uma MANAGER na comunidade, ou seja, abaixo de uma HEAD. E quando tentei atualizar novamente o HEAD
+    // O ERRO ME RETORNOU:  "trace": "org.springframework.dao.IncorrectResultSizeDataAccessException: query did not return a unique result: 2\r\n\tat org.springframework.orm.jpa.EntityManagerFactoryUtils.
+    //Ou seja, entendo que o erro esta quando o MANAGER esta abaixo de uma HEAD e tento atualizar essa HEAD da comunidade.
+
+    //////////////////////////////////////////////////////////////////////
     // PARA CADA CARGO, O REPORT ME DELE PRECISA SER O CARGO ACIMA -- FAZER
     // DELETAR ASSOCIADO DE DENTRO DA COMUNIDADE -- nao fiz
 
@@ -50,33 +67,51 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     PersonRepository personRepository;
 
     @Autowired
+    GroupOfCommunityRepository groupOfCommunityRepository;
+
+    @Autowired
     CommunityAssociatesRepository communityAssociatesRepository;
 
+    //Cria a comunidade
     @Override
-    public TechnologyCommunity createTechCommunity(TechnologyCommunity data, Person person, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy) {
+    public TechnologyCommunity createTechCommunity(TechnologyCommunity data, Person person, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy, GroupOfCommunity groupOfCommunity) {
 
-        validateAndAddHeadResponsible(data, hierarchyGroup, id_group_of_hierarchy);
+        validateAndAddHeadResponsible(data);
 
         TechnologyCommunity communityCreated = new TechnologyCommunity(
                 data.getName_of_community(),
-                data.getHead_responsible()
+                data.getHead_responsible(),
+                groupOfCommunity
         );
+
+        groupOfCommunity.setTechnologyCommunity(communityCreated);
 
         TechnologyCommunity newCommunitySaved = technologyCommunityRepository.save(communityCreated);
 
-        //refreshFieldManagerHead(data);
-        //groupFieldValidator(data);
-
-       /* hierarchyGroupTechnology.setCommunity_id(newCommunitySaved.getId_community());
-        System.out.println("ID DA COMUNIDADE" + hierarchyGroupTechnology.getCommunity_id());*/
-
-       // updatePersonFieldReport(person, newCommunitySaved, data);
+        fieldGroupOfCommunity(newCommunitySaved, groupOfCommunity);
 
         return newCommunitySaved;
     }
 
+    //Metodo responsavel por atribuir os valores da comunidade ao GROUP COMMUNITY (criado automaticamente ao criar uma comunidade)!
+    @Transactional
+    public void fieldGroupOfCommunity(TechnologyCommunity newCommunitySaved, GroupOfCommunity groupOfCommunity) {
 
-    public void validateAndAddHeadResponsible(TechnologyCommunity data, HierarchyGroup hierarchyGroup, Integer id_group_of_hierarchy) {
+
+        if(groupOfCommunity.getName_community() == null) {
+            groupOfCommunity.setName_community(newCommunitySaved.getName_of_community());
+        }
+
+        if(groupOfCommunity.getHead_responsible() == null) {
+            groupOfCommunity.setHead_responsible(newCommunitySaved.getHead_responsible());
+        }
+
+        groupOfCommunityRepository.save(groupOfCommunity);
+
+    }
+
+    //Valida se o HEADDELIVERY que esta sendo aplicado como HEAD DA COMUNIDADE existe!
+    public void validateAndAddHeadResponsible(TechnologyCommunity data) {
         List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
         System.out.println("List of users: " + existingUsers);
 
@@ -100,10 +135,8 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
                /* if(matchingUser.isPresent()) {
                     System.out.println("Usuario existe");
                     updatePersonFieldReport(user, data, idAccount, hierarchyGroup, id_group_of_hierarchy);
-                }
-*/
+                }*/
             });
-
 
             if (!matchingUser.isPresent()) {
                 throw new IllegalArgumentException("User with HEADDELIVERY not found");
@@ -111,184 +144,34 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         }
     }
 
-    private String getDirectorFromCommunityAssociates(List<CommunityAssociates> communityAssociates, Integer idAccount) {
-        for (CommunityAssociates associate : communityAssociates) {
-            if (associate.getId_account().equals(idAccount) && associate.getId_group() != null) {
-                System.out.println("ID DO USUARIO" + idAccount + "EH IGUAL AO ID DO ASSOCIATE COMMUNITY" + associate.getId_account()
-                        + "E TEM UM GRUPO DE HIERARQUIA EXISTENTE" + associate.getId_group());
-
-                Optional<HierarchyGroup> hierarchyGroupOptional = hierarchyGroupRepository.findById(associate.getId_group());
-                if (hierarchyGroupOptional.isPresent()) {
-                    HierarchyGroup hierarchyGroup = hierarchyGroupOptional.get();
-                    return hierarchyGroup.getDirector();
-                }
-            }
-        }
-        return null; // Se não encontrar um diretor correspondente
-    }
-
-
-    public void validateFieldInHierarchyGroup(TechnologyCommunity data, Integer idAccount) {
-        Optional<CommunityAssociates> existingAssociate = communityAssociatesRepository.findByAccountId(idAccount);
-
-        if (existingAssociate.isPresent()) {
-            CommunityAssociates associate = existingAssociate.get();
-            associate.setName_community(data.getName_of_community());
-            communityAssociatesRepository.save(associate);
-        } else {
-            System.out.println("ID NOT FOUND ");
-        }
-    }
-
-    //VERIFICAR SE EXISTE A COMUNIDADE
-    //SE EXISTIR, VERIFICAR SE EXISTE UM USUARIO COM OFFICE HEADDELIVERY
-    // SE EXISTIR, COLOCAR O REPORT ME
-
-
-
+    // Adiciona um associado a comunidade!
     @Override
     @Transactional
-    public TechnologyCommunity toUpdateCommunity(TechnologyCommunity technologyCommunity, Integer id_community, Person person, CommunityAssociates associates) {
-
-        TechnologyCommunity existingCommunity = technologyCommunityRepository.findById(id_community)
-                .orElseThrow(() -> new EntityNotFoundException("TechnologyCommunity not found with id: " + id_community));
-
-        String communityName = existingCommunity.getName_of_community();
-
-        TechnologyCommunity updatedCommunity = technologyCommunityRepository.save(existingCommunity);
-
-        updateAndValidateFields(updatedCommunity, technologyCommunity);
-
-       // HierarchyGroup existingHierarchyGroup = hierarchyGroupRepository.findByCommunityName(communityName);
-
-        CommunityAssociates existingCommunityAssociates = communityAssociatesRepository.findByCommunityName(communityName);
-
-           if(existingCommunityAssociates != null) {
-               existingCommunityAssociates.setName_community(updatedCommunity.getName_of_community());
-               communityAssociatesRepository.save(existingCommunityAssociates);
-                updateFieldNameCommunityPerson(associates, technologyCommunity, updatedCommunity);
-
-            }
-
-          // refreshFieldNewManagerHead(technologyCommunity, hierarchyGroupTechnology);
-          // updateAndValidateFieldsGroup(technologyCommunity, existingCommunity, hierarchyGroupTechnology, updatedCommunity);
-
-        return updatedCommunity;
-    }
-
-
-   public void updateAndValidateFields(TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity ) {
-       validateNewHeadResponsible(updatedCommunity, updatedCommunity);
-
-        if (technologyCommunity.getName_of_community() != null) {
-            technologyCommunity.setName_of_community(updatedCommunity.getName_of_community());
-        }
-
-        if (technologyCommunity.getHead_responsible() != null) {
-            technologyCommunity.setHead_responsible(updatedCommunity.getHead_responsible());
-        }
-    }
-    @Transactional
-    public void validateNewHeadResponsible(TechnologyCommunity data, TechnologyCommunity updatedCommunity) {
-        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
-        System.out.println("List of users for update: " + existingUsers);
-
-        String fieldHead = data.getHead_responsible();
-
-        if (fieldHead != null && !fieldHead.isEmpty()) {
-            Optional<PersonDTO> matchingUser = existingUsers.stream()
-                    .filter(user ->
-                            user.getOffice() == Office.HEADDELIVERY && user.getName().equalsIgnoreCase(data.getHead_responsible()))
-                    .findFirst();
-
-                    matchingUser.ifPresent(user -> {
-                    System.out.println("User New: " + user.getName());
-                    data.setHead_responsible(user.getName() + " " + user.getLast_name());
-
-                    Integer idAccount = user.getId();
-
-                Person existingPerson = personRepository.findById(user.getId())
-                        .orElseThrow(() -> new EntityNotFoundException("Person not found"));
-
-                validateFieldInHierarchyGroup(data, idAccount);
-
-                if (existingPerson.getCommunity() != null && !existingPerson.getCommunity().isEmpty()) {
-                    existingPerson.setCommunity(updatedCommunity.getName_of_community());
-                    System.out.println("NOME DA COMUNIDADE DEPOIS DE ATUALIZAR " + existingPerson.getCommunity());
-
-                        personRepository.save(existingPerson);
-                }
-
-            });
-
-            if (!matchingUser.isPresent()) {
-                throw new IllegalArgumentException("User with new HEADDELIVERY not found");
-            }
-        }
-        
-    }
-
-
-    @Transactional
-    public void updateFieldNameCommunityPerson(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
-        String updatedCommunityName = updatedCommunity.getName_of_community();
-        if (updatedCommunityName == null) {
-            throw new IllegalArgumentException("O nome da comunidade atualizada não pode ser nulo.");
-        }
-
-        List<CommunityAssociates> communityAssociatesList = communityAssociatesRepository.findByNameCommunity(updatedCommunityName);
-
-        if (communityAssociatesList.isEmpty()) {
-            System.out.println("Não há associados à comunidade: " + updatedCommunityName);
-            return;
-        }
-
-        for (CommunityAssociates communityAssociates : communityAssociatesList) {
-            updatePersonCommunity(communityAssociates, updatedCommunityName);
-        }
-    }
-
-
-    private void updatePersonCommunity(CommunityAssociates communityAssociates, String updatedCommunityName) {
-        Integer accountId = communityAssociates.getId_account();
-        if (accountId != null) {
-            Person existingPerson = personRepository.findById(accountId)
-                    .orElseThrow(() -> new EntityNotFoundException("Pessoa não encontrada com ID: " + accountId));
-
-            existingPerson.setCommunity(updatedCommunityName);
-            personRepository.save(existingPerson);
-        }
-    }
-
-
-
-    @Override
-    @Transactional
-    public CommunityAssociates addCommunity(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity, Person person, Integer id, HierarchyGroup hierarchyGroup) {
+    public CommunityAssociates addCommunity(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity, Person person, Integer id, GroupOfCommunity groupOfCommunity) {
         Integer communityId = technologyCommunity.getId_community();
 
         TechnologyCommunity existingCommunity = technologyCommunityRepository.findById(communityId)
                 .orElseThrow(() -> new EntityNotFoundException("Comunidade não encontrada"));
 
-        //HierarchyGroupTechnology hierarchyGroupTechnology = existingCommunity.getHierarchyGroupTechnology();
 
-        CommunityAssociates newCommunityAssociate = toCheckAssociate(communityAssociates,technologyCommunity);
+        //fazer uma busca dentro do TechnologyCommunity, verificar se existe hierarchyGroupTechnology,
+        // veficiar se existe communityAssociate, se existir, prosseguir e fazer
+        // validacao pra verificar se existe person dentro dele, atualizar o nome da comunidade
+        // do objeto person atraves disso.
 
-       // hierarchyGroupTechnology.addAssociates(newCommunityAssociate);
-        validateAndUpdateField(communityId, communityAssociates, technologyCommunity);
+        CommunityAssociates newCommunityAssociate = toCheckAssociate(communityAssociates,technologyCommunity, groupOfCommunity);
+        GroupOfCommunity.addAssociateManager(newCommunityAssociate);
+
+
+        //validateAndUpdateField(communityId, communityAssociates, technologyCommunity);
 
         technologyCommunityRepository.save(existingCommunity);
 
         return newCommunityAssociate;
     }
 
-    //Criar um metodo aqui para que quando o USUARIO for ADICIONADO DEPOIS DE ESTAR EM UM GRUPO DE HIERARQUIA
-    //Preencher o campo COMMUNITY da classe ASSOCIATE.HIERARCHYGROUP.COMMUNITY
-
-
-
     @Transactional
-    public CommunityAssociates toCheckAssociate(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity) {
+    public CommunityAssociates toCheckAssociate(CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity, GroupOfCommunity groupOfCommunity) {
 
         List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
         System.out.println("List of users: " + existingUsers);
@@ -299,11 +182,24 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
             List<CommunityAssociates> matchingAssociate = existingUsers.stream()
                     .filter(user -> user.getOffice() == Office.MANAGER)
                     .map(user -> {
+                        communityAssociates.setName_community(technologyCommunity.getName_of_community());
                         communityAssociates.setId_account(user.getId());
                         communityAssociates.setName_associate(user.getName() + " " + user.getLast_name());
                         communityAssociates.setIdentity(user.getIdentityPerson());
                         communityAssociates.setOffice(String.valueOf(user.getOffice()));
                         communityAssociates.setSeniority(String.valueOf(user.getSeniority()));
+
+                        //PAREI AQUI
+                        //VERIFICAR SE O GROUP EXISTE ANTES DE ADICIONAR!
+                        // Verifica se o GroupOfCommunity já está persistido
+                        if (groupOfCommunity.getId_group_of_community() == null) {
+
+                            groupOfCommunityRepository.save(groupOfCommunity);
+                        }
+
+                        // Configurar o relacionamento bidirecional
+                        communityAssociates.setGroup(groupOfCommunity);
+
 
                         updatePersonWithCommunity(user, technologyCommunity);
 
@@ -322,6 +218,8 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         return communityAssociates;
     }
 
+
+    //Responsavel por vincular o NOME DA COMUNIDADE e o HEAD no campo REPORT ME do PERSON de office nivel MANAGER!
     private void updatePersonWithCommunity(PersonDTO user, TechnologyCommunity technologyCommunity) {
         Person existingPerson = personRepository.findById(user.getId())
                 .orElseThrow(() -> new EntityNotFoundException("Person not found"));
@@ -343,11 +241,23 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
     }
 
 
-    public void validateAndUpdateField(Integer communityId, CommunityAssociates communityAssociates, TechnologyCommunity technologyCommunity) {
-       // communityAssociates.setId_community(communityId);
-        communityAssociates.setName_community(technologyCommunity.getName_of_community());
+    // Responsavel por vincular o NOME DA COMUNIDADE do campo NAME COMMUNITY na classe CommunityAssociates
+    public void validateFieldInHierarchyGroup(TechnologyCommunity data, Integer idAccount) {
+        Optional<CommunityAssociates> existingAssociate = communityAssociatesRepository.findByAccountId(idAccount);
 
-        communityAssociatesRepository.save(communityAssociates);
+        if (existingAssociate.isPresent()) {
+            CommunityAssociates associate = existingAssociate.get();
+            associate.setName_community(data.getName_of_community());
+            communityAssociatesRepository.save(associate);
+        } else {
+            System.out.println("ID NOT FOUND ");
+        }
+    }
+
+
+    @Override
+    public TechnologyCommunity toUpdateCommunity(TechnologyCommunity technologyCommunity, Integer id_community, Person person, CommunityAssociates associates) {
+        return null;
     }
 
 

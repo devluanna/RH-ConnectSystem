@@ -19,12 +19,13 @@ import java.util.stream.Collectors;
 @Service
 public class TechnologyCommunityServiceImpl implements TechnologyCommunityService {
 
-    // Criar comunidade > automaticamente criar grupo > campos do grupo da comunidade precisam herdar os campos da comunidade!
+    // Criar comunidade > automaticamente criar grupo > campos do grupo da comunidade precisam herdar os campos da comunidade! - FEITO
 
     //UPDATE:
-    // Quando atualiza head responsible precisar refletir no campo HEAD do GROUP OF COMMUNITY.
-    // Quando atualizar NOME DA COMUNIDADE refletir no Community Associates
+    // Quando atualiza head responsible precisar refletir no campo HEAD do GROUP OF COMMUNITY. - FEITO
+    // Quando atualizar NOME DA COMUNIDADE refletir no Community Associates - FEITO
 
+    //**** QUANDO ATUALIZA NOME DA COMUNIDADE, ATUALIZA NO COMMUNITY ASSOCIATES MAS NAO ATUALIZA NO PERSON! - FEITO
 
     //////////////////////////////////////////////////////////////////////////////////////
     ///// FEITO TESTE NOS 3 CASOS DE USO, APARENTEMENTE RESOLVIDO! ///////////////////////
@@ -289,7 +290,7 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
             existingCommunityAssociates.setName_community(updatedCommunity.getName_of_community());
             updateReportOfManagersUsers(updatedCommunity);
             communityAssociatesRepository.save(existingCommunityAssociates);
-            //updateFieldNameCommunityPerson(associates, technologyCommunity, updatedCommunity);
+            updateFieldNameCommunityPerson(associates, technologyCommunity, updatedCommunity);
 
         }
 
@@ -375,9 +376,8 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         }
     }
 
-////////////////////////////// ANTES! ///////////////////////////////////////////////////
 
-    // Metodo responsavel por validar os usuarios que estao dentro do CommunityAssociates e alterar o CommunityName do Person delas, quando atualiza a comunidade.
+    // Metodo responsavel por validar os usuarios que estao dentro do CommunityAssociates e atualizar o Nome da Comunidade.
     @Transactional
     public void updateFieldNameCommunityPerson(CommunityAssociates associates, TechnologyCommunity technologyCommunity, TechnologyCommunity updatedCommunity) {
         String updatedCommunityName = updatedCommunity.getName_of_community();
@@ -395,11 +395,11 @@ public class TechnologyCommunityServiceImpl implements TechnologyCommunityServic
         }
 
         for (CommunityAssociates communityAssociates : communityAssociatesList) {
-            //updatePersonCommunity(communityAssociates, updatedCommunityName);
+            updatePersonCommunity(communityAssociates, updatedCommunityName);
         }
     }
 
-    // Verificar se o HEAD DELIVERY existe no Community Associates, se existir vai atualizar as infos dele.
+    // Valida se ID ACCOUNT do usuario e o mesmo do campo do CommunityAssociates, se for, atualiza o Community Name do Person!
     private void updatePersonCommunity(CommunityAssociates communityAssociates, String updatedCommunityName) {
         Integer accountId = communityAssociates.getId_account();
         if (accountId != null) {

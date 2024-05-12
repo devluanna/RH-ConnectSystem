@@ -35,6 +35,8 @@ public class Squad {
     //FAZER LOGICA PRA ATRELAR UM TIPO DE TYPEOFRECORD EM UMA COMUNIDADE? PRA FILTRAR?
     // >>> SE FOR TECH > STREAM FOREACH LISTAR COMUNIDADES RELACIONADAS A ELE
 
+    private String community_name;
+
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "members_id")
@@ -44,7 +46,7 @@ public class Squad {
     private Date createdAt;
 
 
-    public Squad(String name_squad, String teach_lead, String project_manager, TypeOfRecord type, String area_squad, String customer_project, Date createdAt, MemberDashboardSquad allMembers) {
+    public Squad(String name_squad, String teach_lead, String project_manager, TypeOfRecord type, String area_squad, String customer_project, Date createdAt, MemberDashboardSquad allMembers, String community_name) {
         this.name_squad = name_squad;
         this.teach_lead = teach_lead;
         this.project_manager = project_manager;
@@ -54,6 +56,7 @@ public class Squad {
         this.status = StatusSquad.valueOf("ACTIVE");
         this.createdAt = new Date();
         this.allMembers = allMembers;
+        this.community_name = community_name;
     }
 
 }

@@ -1,6 +1,10 @@
 package com.connect.system.service.Impl;
 
 
+import com.connect.system.domain.model.Account.ResponseDTO.PersonDTO;
+import com.connect.system.domain.model.System.TechnologyCommunity.HierarchyGroup;
+import com.connect.system.domain.model.System.TechnologyCommunity.TechnologyCommunity;
+import com.connect.system.domain.repository.System.TechnologyCommunityRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -39,6 +43,43 @@ import java.util.Optional;
 @Service
 public class SquadServiceImpl implements SquadService {
 
+    //********** PAREI NA PARTE QUE ESTAVA COLOCANDO NOME DO PROJECT MANAGER E ADICIONANDO ELE AUTOMATICAMENTE DENTRO DA SQUAD
+    // ACHEI PROBLEMA NOS IDS
+    // {
+    //    "id_squad": 1,
+    //    "name_squad": "Rogue Two",
+    //    "teach_lead": null,
+    //    "project_manager": "lua nogueira",
+    //    "type": "TECHNOLOGY",
+    //    "customer_project": "VALE",
+    //    "status": "ACTIVE",
+    //    "area_squad": "TECNOLOGIA",
+    //    "community_name": "Seguranca",
+    //    "allMembers": {
+    //        "id_dashboardMembers": 1,
+    //        "members": [
+    //            {
+    //                "id_dashboardMembers": 0,
+    //                "id_member": 0,
+    //                "id_squad": 0,
+    //                "name_squad": null,
+    //                "id_account": 0,
+    //                "identity": null,
+    //                "name": "lua",
+    //                "last_name": "nogueira",
+    //                "office": "MANAGER",
+    //                "seniority": null,
+    //                "sub_position": "PROJECTMANAGER",
+    //                "report_me": null
+    //            }
+    //        ]
+    //    },
+    //    "createdAt": "2024-05-12T23:49:11.266+0000"
+    //}
+
+    // *** VALIDACOES ***
+    // O PROJECT MANAGER, PO E TEACH LEAD PRECISAM ESTAR DENTRO DA SQUAD
+    //
 
     @Autowired
     SquadRepository squadRepository;
@@ -50,6 +91,9 @@ public class SquadServiceImpl implements SquadService {
     MembersSquadRepository membersSquadRepository;
     @Autowired
     JobDetailsRepository jobDetailsRepository;
+    @Autowired
+    TechnologyCommunityRepository technologyCommunityRepository;
+
 
     @Override
     public List<Squad> getAllSquads() {
@@ -77,8 +121,19 @@ public class SquadServiceImpl implements SquadService {
 
         return squad;
     }
+    //aq
+    @Override
+    public Squad toUpdateSquad(Integer id_squad, Squad squads, Integer id) {
+        return null;
+    }
+    //aq
+    @Override
+    public void removeMemberFromSquad(Integer id_squad, Integer id_member) {
+    }
 
 
+
+    //Cria uma nova squad
     @Override
     @Transactional
     public Squad createSquad(Integer id_squad, Squad squad, MemberDashboardSquad memberDashboardSquad) {
@@ -89,40 +144,125 @@ public class SquadServiceImpl implements SquadService {
         }
 
         Person authenticatedUser = (Person) authentication.getPrincipal();
-        Squad squadNew = new Squad(
+
+        squadValidatorField(squad, memberDashboardSquad);
+
+        Squad squadNewCreated = new Squad(
                 squad.getName_squad(), squad.getTeach_lead(), squad.getProject_manager(), squad.getType(), squad.getArea_squad(), squad.getCustomer_project(),
-                squad.getCreatedAt(), memberDashboardSquad);
+                squad.getCreatedAt(), memberDashboardSquad, squad.getCommunity_name());
 
+        memberDashboardSquad.setSquad(squadNewCreated);
 
-        memberDashboardSquad.setSquad(squadNew);
-        Squad savedSquad = squadRepository.save(squadNew);
+        Squad newSquadSaved = squadRepository.save(squadNewCreated);
 
-        Members newMember = createNewMember(savedSquad, memberDashboardSquad, authenticatedUser);
-        membersSquadRepository.save(newMember);
+        return newSquadSaved;
 
-        memberDashboardSquad.setSquad(savedSquad);
-        dashboardMembersSquadRepository.save(memberDashboardSquad);
-
-        squadNew.getAllMembers();
-        validateAndUpdateProjectManagerField(squadNew);
-
-        BeanUtils.copyProperties(savedSquad, squad);
-
-        return squad;
     }
 
-    private void validateAndUpdateProjectManagerField(Squad squadNew ) {
-        if(squadNew.getProject_manager() == null) {
-            for (Members member : squadNew.getAllMembers().getMembers()) {
-                if (SubPosition.PROJECTMANAGER.name().equalsIgnoreCase(member.getSub_position())) {
-                    squadNew.setProject_manager(member.getName() + " " + member.getLast_name());
-                    squadRepository.save(squadNew);
-                    break;
+    // Metodo responsavel por validar campos
+    public void squadValidatorField(Squad squad, MemberDashboardSquad allMembers) {
+        if(squad != null) {
+            validateNameCommunity(squad);
+            validateAndAddProjectManager(squad, allMembers);
+           // validateAndAddTeachLead(squad);
+        }
+    }
+
+    //Verifica se existe a comunidade
+    // adiciona a comunidade
+    // Valida o campo COMMUNITY
+    private void validateNameCommunity(Squad squadNew) {
+        String communityName = squadNew.getCommunity_name();
+
+        if (communityName != null && !communityName.isEmpty()) {
+            List<TechnologyCommunity> existingCommunity = technologyCommunityRepository.findByNameCommunity(communityName);
+
+            if (!existingCommunity.isEmpty()) {
+                TechnologyCommunity matchingCommunity = existingCommunity.get(0);
+                System.out.println("Community: " + matchingCommunity.getName_of_community());
+                squadNew.setCommunity_name(matchingCommunity.getName_of_community());
+            } else {
+                throw new IllegalArgumentException("Community not found");
+            }
+        } else {
+            throw new IllegalArgumentException("Community name cannot be null or empty");
+        }
+    }
+
+    //  Metodo responsavel por validar se o PROJECT MANAGER existe no sistema e se existir, adicionar na squad automaticamente!
+    // UMA IDEIA DE LISTAR APENAS USUARIOS COM A ROLE OU SUBPOSITION XXXXX pra nao pesar tanto
+    public void validateAndAddProjectManager(Squad squad, MemberDashboardSquad allMembers ) {
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users in System: " + existingUsers);
+
+        String fieldProjectManager = squad.getProject_manager();
+
+        if (fieldProjectManager != null && !fieldProjectManager.isEmpty()) {
+            Optional<PersonDTO> matchingUser = existingUsers.stream()
+                    .filter(user ->
+                            (user.getSub_position() == SubPosition.PROJECTMANAGER || user.getOffice() == Office.MANAGER) &&
+                                    (user.getName() + " " + user.getLast_name()).equalsIgnoreCase(squad.getProject_manager()))
+                    .findAny();
+
+            matchingUser.ifPresent(user -> {
+                System.out.println("User: " + user.getName());
+                squad.setProject_manager(user.getName() + " " + user.getLast_name());
+
+                Optional<Person> personOptional = personRepository.findById(user.getId());
+
+                if (personOptional.isPresent()) {
+                    Person person = personOptional.get();
+
+                    // Crie uma nova instância de Members
+                    Members newMemberProjectManager = new Members();
+                    newMemberProjectManager.setName(person.getName());
+                    newMemberProjectManager.setLast_name(person.getLast_name());
+                    newMemberProjectManager.setOffice(String.valueOf(person.getOffice()));
+                    newMemberProjectManager.setSub_position(String.valueOf(person.getSub_position()));
+                    newMemberProjectManager.setId_squad(squad.getId_squad());
+
+                    // Adicione o gerente de projeto ao dashboard de membros da squad
+                    allMembers.addMembers(newMemberProjectManager);
+                    dashboardMembersSquadRepository.save(allMembers);
+
+
                 }
+            });
+
+            if (!matchingUser.isPresent()) {
+                throw new IllegalArgumentException("User with MANAGER PROJECT not found");
             }
         }
     }
 
+
+    //  Metodo responsavel por validar se o TEACHLEAD existe no sistema
+    // UMA IDEIA DE LISTAR APENAS USUARIOS COM A ROLE OU SUBPOSITION XXXXX pra nao pesar tanto
+    public void validateAndAddTeachLead(Squad squad) {
+        List<PersonDTO> existingUsers = personRepository.findAllUsersWithPersonalDataIds();
+        System.out.println("List of users in System: " + existingUsers);
+
+        String fieldTeachLead = squad.getProject_manager();
+
+        if (fieldTeachLead != null && !fieldTeachLead.isEmpty()) {
+            Optional<PersonDTO> matchingUser = existingUsers.stream()
+                    .filter(user ->
+                            (user.getSub_position() == SubPosition.TEACHLEAD) &&
+                                    (user.getName() + " " + user.getLast_name()).equalsIgnoreCase(squad.getTeach_lead()))
+                    .findAny();
+
+            matchingUser.ifPresent(user -> {
+                System.out.println("User: " + user.getName());
+                squad.setTeach_lead(user.getName() + " " + user.getLast_name());
+            });
+
+            if (!matchingUser.isPresent()) {
+                throw new IllegalArgumentException("User with TEACHLEAD not found");
+            }
+        }
+    }
+
+    // Adiciona membro na squad
     @Override
     @Transactional
     public Members addMemberToSquad(Integer squad_id, Integer id, Integer id_dashboardMembers, Members members) {
@@ -136,7 +276,7 @@ public class SquadServiceImpl implements SquadService {
             MemberDashboardSquad allMembers = allMembersOptional.get();
 
             if (isMemberAlreadyInSquad(allMembers, id)) {
-                throw new IllegalArgumentException("Member already added to the squad.");
+                throw new IllegalArgumentException("Membro já adicionado a squad.");
             }
 
             changeSubPositionJobs(person);
@@ -148,9 +288,10 @@ public class SquadServiceImpl implements SquadService {
         } else {
             throw new IllegalArgumentException("Squad, Person, ou MemberDashboardSquad não encontrado.");
         }
+
     }
 
-
+    // Quando o membro e adicionado, alguns campos no DASHBOARD sao atualizados de acordo com PERSON.
     private Members createNewMember(Squad squad, MemberDashboardSquad allMembers, Person person ) {
         JobsDetails jobsDetails = person.getJobsDetails();
 
@@ -179,6 +320,7 @@ public class SquadServiceImpl implements SquadService {
         return newMember;
     }
 
+    // Salva os campos de JOBS DETAILS
     private void saveNewMember(Members newMember, Squad squad, Person person) {
         JobsDetails jobsDetails = person.getJobsDetails();
         validateFieldNameSquadUser(jobsDetails, newMember);
@@ -187,165 +329,7 @@ public class SquadServiceImpl implements SquadService {
 
     }
 
-    private boolean isMemberAlreadyInSquad(MemberDashboardSquad allMembers, Integer member_id) {
-        return allMembers.getMembers().stream()
-                .anyMatch(member -> member_id.equals(member.getId_account()));
-    }
-
-
-    private void changeSubPositionJobs(Person person) {
-        if (person.getSub_position().equals(SubPosition.valueOf("NOTAPPLICABLE"))) {
-            person.setSub_position(SubPosition.valueOf(String.valueOf(SubPosition.valueOf(String.valueOf(SubPosition.valueOf("MEMBER"))))));
-            personRepository.save(person);
-        }
-    }
-
-    private void changeStatusAndReportMe(Person person, Squad squad) {
-        person.setReport_me(squad.getProject_manager());
-        person.setStatus(Status.valueOf("ALLOCATED"));
-        personRepository.save(person);
-    }
-
-
-    @Override
-    public void removeMemberFromSquad(Integer id_squad, Integer id_member) {
-        try {
-            Squad squad = squadRepository.findById(id_squad).orElseThrow(() -> new IllegalArgumentException("Squad not found"));
-            Members memberToRemove = membersSquadRepository.findById(id_member).orElseThrow(() -> new IllegalArgumentException("Member not found"));
-
-            MemberDashboardSquad memberDashboardSquad = squad.getAllMembers();
-            memberDashboardSquad.getMembers().remove(memberToRemove);
-
-            Person person = personRepository.findById(memberToRemove.getId_account()).orElse(null);
-
-            if (person != null) {
-                if(person.getSub_position().equals(SubPosition.valueOf("PROJECTMANAGER")) || person.getOffice().equals(Office.valueOf("MANAGER"))) {
-                    squad.setProject_manager(null);
-                    person.setStatus(Status.valueOf("AVAILABLE"));
-                    person.setSub_position(SubPosition.valueOf("PROJECTMANAGER"));
-                } else if(person.getSub_position().equals(SubPosition.valueOf("TEACHLEAD"))) {
-                    squad.setTeach_lead(null);
-                    person.setStatus(Status.valueOf("AVAILABLE"));
-                    person.setSub_position(SubPosition.valueOf("NOTAPPLICABLE"));
-                } else {
-                person.setStatus(Status.valueOf("AVAILABLE"));
-                person.setSub_position(SubPosition.valueOf("NOTAPPLICABLE"));}
-                personRepository.save(person);
-
-                JobsDetails jobsDetails = person.getJobsDetails();
-
-                if (jobsDetails != null) {
-                    jobsDetails.setName_squad(null);
-                    jobsDetails.setId_squad(null);
-                    jobsDetails.setId_memberOfSquad(null);
-                    jobDetailsRepository.save(jobsDetails);
-                }
-            }
-
-            squadRepository.save(squad);
-            membersSquadRepository.delete(memberToRemove);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
-        }
-    }
-
-
-
-    @Override
-    @Transactional(propagation = Propagation.REQUIRED)
-    public Squad toUpdateSquad(Integer id_squad, Squad squads, Integer id) {
-
-        Squad existingSquad = squadRepository.findById(id_squad).orElse(null);
-
-        if (existingSquad != null) {
-
-            String oldSquadName = existingSquad.getName_squad();
-            Utils.copyNonNullProperties(squads, existingSquad);
-
-            for (Members member : existingSquad.getAllMembers().getMembers()) {
-                member.setName_squad(existingSquad.getName_squad());
-                membersSquadRepository.save(member);
-
-                Person person = personRepository.findById(member.getId_account()).orElse(null);
-
-                editFieldTeachLeadSquad(existingSquad, id_squad);
-                editFieldProjectManagerSquad(existingSquad, id_squad, person);
-
-                if (person != null) {
-                    JobsDetails jobsDetails = person.getJobsDetails();
-
-                    if (jobsDetails != null && jobsDetails.getName_squad() != null && jobsDetails.getName_squad().equals(oldSquadName)) {
-                        jobsDetails.setName_squad(existingSquad.getName_squad());
-                        jobDetailsRepository.save(jobsDetails);
-                    }
-                }
-            }
-        }
-        return squadRepository.save(existingSquad);
-    }
-
-    private void editFieldTeachLeadSquad(Squad squads, Integer id_squad) {
-        Squad existingSquad = squadRepository.findById(id_squad).orElse(null);
-
-        if (existingSquad != null) {
-            String teachLeadName = squads.getTeach_lead();
-
-            if (teachLeadName != null && !teachLeadName.isEmpty()) {
-                boolean isTeachLeadValid = existingSquad.getAllMembers().getMembers()
-                        .stream()
-                        .anyMatch(member -> teachLeadName.equals(member.getName() + " " + member.getLast_name()));
-
-                if (isTeachLeadValid) {
-                    existingSquad.setTeach_lead(teachLeadName);
-                } else {
-                    throw new IllegalArgumentException("The provided teach_lead is not a valid squad member");
-                }
-            } else {
-                throw new IllegalArgumentException("The teach_lead field is mandatory for the update");
-            }
-        }
-    }
-
-    private void editFieldProjectManagerSquad(Squad squads, Integer id_squad, Person person) {
-        Squad existingSquad = squadRepository.findById(id_squad).orElse(null);
-
-        if (existingSquad != null) {
-            String projectManagerName = squads.getProject_manager();
-
-            if (projectManagerName != null && !projectManagerName.isEmpty()) {
-                boolean isProjectManagerValid = existingSquad.getAllMembers().getMembers()
-                        .stream()
-                        .anyMatch(member -> projectManagerName.equals(member.getName() + " " + member.getLast_name())
-                                && member.getSub_position().equals(String.valueOf(SubPosition.PROJECTMANAGER)));
-
-                if (isProjectManagerValid) {
-                    existingSquad.setProject_manager(projectManagerName);
-
-
-                    existingSquad.getAllMembers().getMembers()
-                            .forEach(member -> {
-                                if ("MEMBER".equals(member.getSub_position()) || "TEACHLEAD".equals(member.getSub_position())) {
-                                    member.setReport_me(projectManagerName);
-
-                                    Person account = personRepository.findById(member.getId_account()).orElse(null);
-                                    if (account != null) {
-                                        account.setReport_me(projectManagerName);
-                                        personRepository.save(account);
-                                    }
-                                }
-                            });
-                } else {
-                    throw new IllegalArgumentException("The provided project_manager is not a valid squad member");
-                }
-            } else {
-                throw new IllegalArgumentException("The project_manager field is mandatory for the update");
-            }
-        }
-    }
-
-
+    // Atualiza os campos de JOBS DETAILS do membro adicionado
     private void validateFieldNameSquadUser(JobsDetails jobsDetails, Members newMember) {
         if(jobsDetails != null) {
             if (jobsDetails.getName_squad() == null) {
@@ -364,16 +348,31 @@ public class SquadServiceImpl implements SquadService {
         }
     }
 
-/*    private void validateAndUpdateTechLeadField(Squad squad) {
-        if (squad.getTeach_lead() == null) {
-        for (Members member : squad.getAllMembers().getMembers()) {
-           if (SubPosition.TEACHLEAD.name().equalsIgnoreCase(member.getSub_position())) {
-               squad.setTeach_lead(member.getName() + " " + member.getLast_name());
-               squadRepository.save(squad);
-               break;
-           }
-       }
-   }}*/
+    // Verifica se o usuario ja esta na squad
+    private boolean isMemberAlreadyInSquad(MemberDashboardSquad allMembers, Integer member_id) {
+        return allMembers.getMembers().stream()
+                .anyMatch(member -> member_id.equals(member.getId_account()));
+    }
+
+    // Atualiza a SUBPOSITION do membro
+    private void changeSubPositionJobs(Person person) {
+        if (person.getSub_position().equals(SubPosition.valueOf("NOTAPPLICABLE"))) {
+            person.setSub_position(SubPosition.valueOf(String.valueOf(SubPosition.valueOf(String.valueOf(SubPosition.valueOf("MEMBER"))))));
+            personRepository.save(person);
+        }
+    }
+
+    // Atualiza o STATUS e REPORT ME do membro
+    private void changeStatusAndReportMe(Person person, Squad squad) {
+        person.setReport_me(squad.getProject_manager());
+        person.setStatus(Status.valueOf("ALLOCATED"));
+        personRepository.save(person);
+    }
+
+
+
+
+
 
 }
 

@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PersonRepository extends JpaRepository<Person, Integer> {
@@ -35,4 +36,6 @@ public interface PersonRepository extends JpaRepository<Person, Integer> {
     @Query("SELECT p FROM Person p WHERE p.office = :office AND p.status = :status")
     Person findByOffice(@Param("office") Office office, @Param("status") Status status);
 
+    @Query("SELECT p FROM Person p WHERE CONCAT(p.name, ' ', p.last_name) = :fullName")
+    Optional<Person> findByFullName(String fullName);
 }

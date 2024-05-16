@@ -24,6 +24,14 @@ public class MemberDashboardSquad {
     private List<Members> members = new ArrayList<>();
 
     public void addMembers(Members member) {
+        if (members == null) {
+            members = new ArrayList<>();
+        }
+
+        // Define o ID da squad para o membro
+        member.setId_squad(this.squad.getId_squad());
+
+        // Adiciona o membro à lista de membros da squad
         members.add(member);
     }
     public void setMembers(List<Members> members) {

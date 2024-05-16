@@ -10,6 +10,7 @@ public class Members {
     private int id_dashboardMembers;
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id_member;
 
     private int id_squad;
